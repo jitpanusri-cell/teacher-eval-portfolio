@@ -2504,7 +2504,7 @@
             };
             
             try {
-                const { error } = await supabaseClient.from('eval_items').update(dataToSave).eq('item_uid', id);
+                const { error } = await supabaseClient.from('eval_items').update(dataToSave).eq('id', id);
                 if(!error) {
                     window.showToast(`บันทึกข้อ ID: ${id} สำเร็จ!`);
                     window.syncData(true);
@@ -2531,7 +2531,7 @@
                         updated_at: new Date()
                     };
 
-                    await supabaseClient.from('eval_items').update(dataToSave).eq('item_uid', id);
+                    await supabaseClient.from('eval_items').update(dataToSave).eq('id', id);
                 }
                 window.showToast("บันทึกข้อมูลทุกหัวข้อสำเร็จ!");
                 window.syncData(true);
@@ -2665,7 +2665,7 @@
                             description: editorContent,
                             updated_at: new Date()
                         };
-                        await supabaseClient.from('eval_items').update(dataToSave).eq('item_uid', id);
+                        await supabaseClient.from('eval_items').update(dataToSave).eq('id', id);
                     }
                 } else {
                     let id = document.getElementById('edit-item-id').value;
