@@ -681,48 +681,54 @@
             
             <div id="admin-sticky-header" class="sticky top-0 z-[100] bg-white/95 backdrop-blur-xl border-b border-slate-200 shadow-sm pt-6 pb-3 px-4 md:px-8 mb-6 rounded-b-3xl">
                 <div class="flex flex-col xl:flex-row justify-between items-center gap-4">
-                    <div class="flex-shrink-0 text-center xl:text-left">
-                        <h2 class="text-3xl md:text-4xl font-semibold text-slate-800 leading-tight">จัดการระบบ</h2>
-                        <span class="text-amber-500 font-medium tracking-widest uppercase text-[10px] md:text-xs">Admin Dashboard</span>
-                    </div>
-                    
-                    <div class="flex flex-1 overflow-x-auto gap-2 hide-scrollbar w-full xl:justify-center" id="admin-horizontal-menu">
-    <button type="button" onclick="selectAdminTab('profile')" id="sidebar-tab-profile" class="admin-sidebar-btn flex-shrink-0 px-4 py-2 rounded-xl text-xs md:text-sm font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 flex items-center transition-all shadow-sm active-tab">
-        <i class="fas fa-user-circle mr-1.5"></i> ข้อมูลส่วนตัว
-    </button>
-    <button type="button" onclick="selectAdminTab('workload')" id="sidebar-tab-workload" class="admin-sidebar-btn flex-shrink-0 px-4 py-2 rounded-xl text-xs md:text-sm font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 flex items-center transition-all shadow-sm">
-        <i class="fas fa-chalkboard-teacher mr-1.5"></i> ภาระงาน
-    </button>
-    <button type="button" onclick="selectAdminTab('portfolio')" id="sidebar-tab-portfolio" class="admin-sidebar-btn flex-shrink-0 px-4 py-2 rounded-xl text-xs md:text-sm font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 flex items-center transition-all shadow-sm">
-        <i class="fas fa-briefcase mr-1.5"></i> ผลงาน
-    </button>
-    <button type="button" onclick="selectAdminTab('evals_1')" id="sidebar-tab-evals_1" class="admin-sidebar-btn flex-shrink-0 px-4 py-2 rounded-xl text-xs md:text-sm font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 flex items-center transition-all shadow-sm">
-        <i class="fas fa-shield-alt mr-1.5"></i> องค์ประกอบที่ 1
-    </button>
-    <button type="button" onclick="selectAdminTab('evals_2')" id="sidebar-tab-evals_2" class="admin-sidebar-btn flex-shrink-0 px-4 py-2 rounded-xl text-xs md:text-sm font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 flex items-center transition-all shadow-sm">
-        <i class="fas fa-laptop-code mr-1.5"></i> องค์ประกอบที่ 2
-    </button>
-</div>
-
-<div class="flex flex-wrap items-center justify-center gap-2 bg-slate-50 p-1.5 md:p-2 rounded-2xl shadow-inner border border-slate-200 flex-shrink-0">
-    <button onclick="syncData(true)" class="flex items-center justify-center w-9 h-9 bg-slate-800 text-white rounded-xl hover:bg-slate-700 transition-colors shadow-sm" title="ซิงค์ข้อมูล">
-        <i class="fas fa-sync-alt" id="sync-icon"></i>
-    </button>
-    <button type="button" onclick="logOutAdmin()" id="btn-logout" class="flex items-center justify-center w-9 h-9 bg-rose-600 text-white rounded-xl hover:bg-rose-700 transition-colors shadow-sm" title="ออกจากระบบ">
-        <i class="fas fa-sign-out-alt"></i>
-    </button>
-    <div class="w-px h-6 bg-slate-200 mx-1"></div> 
-    <div class="flex items-center gap-1.5 bg-brand-50 p-1 rounded-xl border border-brand-100">
-        <select id="admin-eval-round" class="bg-white border-none rounded-lg py-1.5 px-2 text-xs font-semibold text-brand-800 outline-none cursor-pointer focus:ring-1 focus:ring-brand-400">
-            <option value="ครั้งที่ 1">ครั้งที่ 1</option>
-            <option value="ครั้งที่ 2">ครั้งที่ 2</option>
-            <option value="ครั้งที่ 3">ครั้งที่ 3</option>
-            <option value="ครั้งที่ 4">ครั้งที่ 4</option>
-        </select>
-        <button type="button" onclick="saveEvalRoundSettings()" id="btn-save-round" class="flex items-center justify-center px-3 py-1.5 bg-brand-600 text-white rounded-lg text-xs font-bold hover:bg-brand-700 transition-colors shadow-sm" title="บันทึกรอบการประเมิน">
-            <i class="fas fa-save"></i>
+    
+    <!-- 1. ส่วนหัวข้อ (ซ้าย) -->
+    <div class="flex-shrink-0 text-center xl:text-left">
+        <h2 class="text-3xl md:text-4xl font-semibold text-slate-800 leading-tight">จัดการระบบ</h2>
+        <span class="text-amber-500 font-medium tracking-widest uppercase text-[10px] md:text-xs">Admin Dashboard</span>
+    </div>
+    
+    <!-- 2. ส่วนเมนู (กลาง) - ย่อข้อความแล้ว -->
+    <div class="flex flex-1 overflow-x-auto gap-2 hide-scrollbar w-full xl:justify-center" id="admin-horizontal-menu">
+        <button type="button" onclick="selectAdminTab('profile')" id="sidebar-tab-profile" class="admin-sidebar-btn flex-shrink-0 px-4 py-2 rounded-xl text-xs md:text-sm font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 flex items-center transition-all shadow-sm active-tab">
+            <i class="fas fa-user-circle mr-1.5"></i> ข้อมูลส่วนตัว
+        </button>
+        <button type="button" onclick="selectAdminTab('workload')" id="sidebar-tab-workload" class="admin-sidebar-btn flex-shrink-0 px-4 py-2 rounded-xl text-xs md:text-sm font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 flex items-center transition-all shadow-sm">
+            <i class="fas fa-chalkboard-teacher mr-1.5"></i> ภาระงาน
+        </button>
+        <button type="button" onclick="selectAdminTab('portfolio')" id="sidebar-tab-portfolio" class="admin-sidebar-btn flex-shrink-0 px-4 py-2 rounded-xl text-xs md:text-sm font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 flex items-center transition-all shadow-sm">
+            <i class="fas fa-briefcase mr-1.5"></i> ผลงาน
+        </button>
+        <button type="button" onclick="selectAdminTab('evals_1')" id="sidebar-tab-evals_1" class="admin-sidebar-btn flex-shrink-0 px-4 py-2 rounded-xl text-xs md:text-sm font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 flex items-center transition-all shadow-sm">
+            <i class="fas fa-shield-alt mr-1.5"></i> องค์ประกอบที่ 1
+        </button>
+        <button type="button" onclick="selectAdminTab('evals_2')" id="sidebar-tab-evals_2" class="admin-sidebar-btn flex-shrink-0 px-4 py-2 rounded-xl text-xs md:text-sm font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 flex items-center transition-all shadow-sm">
+            <i class="fas fa-laptop-code mr-1.5"></i> องค์ประกอบที่ 2
         </button>
     </div>
+
+    <!-- 3. ส่วนปุ่มจัดการ (ขวา) - เปลี่ยนเป็นไอคอนแล้ว -->
+    <div class="flex flex-wrap items-center justify-center gap-2 bg-slate-50 p-1.5 md:p-2 rounded-2xl shadow-inner border border-slate-200 flex-shrink-0">
+        <button onclick="syncData(true)" class="flex items-center justify-center w-9 h-9 bg-slate-800 text-white rounded-xl hover:bg-slate-700 transition-colors shadow-sm" title="ซิงค์ข้อมูล">
+            <i class="fas fa-sync-alt" id="sync-icon"></i>
+        </button>
+        <button type="button" onclick="logOutAdmin()" id="btn-logout" class="flex items-center justify-center w-9 h-9 bg-rose-600 text-white rounded-xl hover:bg-rose-700 transition-colors shadow-sm" title="ออกจากระบบ">
+            <i class="fas fa-sign-out-alt"></i>
+        </button>
+        <div class="w-px h-6 bg-slate-200 mx-1"></div> 
+        <div class="flex items-center gap-1.5 bg-brand-50 p-1 rounded-xl border border-brand-100">
+            <select id="admin-eval-round" class="bg-white border-none rounded-lg py-1.5 px-2 text-xs font-semibold text-brand-800 outline-none cursor-pointer focus:ring-1 focus:ring-brand-400">
+                <option value="ครั้งที่ 1">ครั้งที่ 1</option>
+                <option value="ครั้งที่ 2">ครั้งที่ 2</option>
+                <option value="ครั้งที่ 3">ครั้งที่ 3</option>
+                <option value="ครั้งที่ 4">ครั้งที่ 4</option>
+            </select>
+            <button type="button" onclick="saveEvalRoundSettings()" id="btn-save-round" class="flex items-center justify-center px-3 py-1.5 bg-brand-600 text-white rounded-lg text-xs font-bold hover:bg-brand-700 transition-colors shadow-sm" title="บันทึกรอบการประเมิน">
+                <i class="fas fa-save"></i>
+            </button>
+        </div>
+    </div>
+    
 </div>
                 
                 <div id="global-toolbar-container" class="w-full min-h-[42px] mt-3 pt-2 border-t border-slate-100 hidden transition-all duration-300"></div>
