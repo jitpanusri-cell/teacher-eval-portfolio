@@ -156,7 +156,7 @@
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             width: 58px; height: 58px; overflow: hidden; white-space: nowrap;
             background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.15);
+            -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 0.15);
             border-radius: 9999px; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
         }
         #navbar.expanded { 
@@ -679,64 +679,69 @@
         <!-- Page 8: Admin Dashboard -->
         <div id="page-8" class="page-section w-full max-w-[98%] mx-auto mb-12">
             
-            <div class="flex flex-col xl:flex-row justify-between items-center gap-4">
-    
-    <!-- 1. ส่วนหัวข้อ (ซ้าย) + สถานะ Auto-save -->
-    <div class="flex-shrink-0 text-center xl:text-left flex items-center">
-        <div>
-            <h2 class="text-3xl md:text-4xl font-semibold text-slate-800 leading-tight">จัดการระบบ</h2>
-            <span class="text-amber-500 font-medium tracking-widest uppercase text-[10px] md:text-xs">Admin Dashboard</span>
-        </div>
-        <!-- ข้อความแจ้งสถานะ Auto-save -->
-        <span id="auto-save-status" class="text-xs font-medium text-slate-500 ml-4 px-3 py-1 bg-slate-100 rounded-full opacity-0 transition-opacity duration-300 hidden md:inline-flex items-center gap-1.5 shadow-inner"></span>
-    </div>
-    
-    <!-- 2. ส่วนเมนู (กลาง) - ย่อข้อความแล้ว -->
-    <div class="flex flex-1 overflow-x-auto gap-2 hide-scrollbar w-full xl:justify-center" id="admin-horizontal-menu">
-        <button type="button" onclick="selectAdminTab('profile')" id="sidebar-tab-profile" class="admin-sidebar-btn flex-shrink-0 px-4 py-2 rounded-xl text-xs md:text-sm font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 flex items-center transition-all shadow-sm active-tab">
-            <i class="fas fa-user-circle mr-1.5"></i> ข้อมูลส่วนตัว
-        </button>
-        <button type="button" onclick="selectAdminTab('workload')" id="sidebar-tab-workload" class="admin-sidebar-btn flex-shrink-0 px-4 py-2 rounded-xl text-xs md:text-sm font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 flex items-center transition-all shadow-sm">
-            <i class="fas fa-chalkboard-teacher mr-1.5"></i> ภาระงาน
-        </button>
-        <button type="button" onclick="selectAdminTab('portfolio')" id="sidebar-tab-portfolio" class="admin-sidebar-btn flex-shrink-0 px-4 py-2 rounded-xl text-xs md:text-sm font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 flex items-center transition-all shadow-sm">
-            <i class="fas fa-briefcase mr-1.5"></i> ผลงาน
-        </button>
-        <button type="button" onclick="selectAdminTab('evals_1')" id="sidebar-tab-evals_1" class="admin-sidebar-btn flex-shrink-0 px-4 py-2 rounded-xl text-xs md:text-sm font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 flex items-center transition-all shadow-sm">
-            <i class="fas fa-shield-alt mr-1.5"></i> องค์ประกอบที่ 1
-        </button>
-        <button type="button" onclick="selectAdminTab('evals_2')" id="sidebar-tab-evals_2" class="admin-sidebar-btn flex-shrink-0 px-4 py-2 rounded-xl text-xs md:text-sm font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 flex items-center transition-all shadow-sm">
-            <i class="fas fa-laptop-code mr-1.5"></i> องค์ประกอบที่ 2
-        </button>
-    </div>
-
-    <!-- 3. ส่วนปุ่มจัดการ (ขวา) - เปลี่ยนเป็นไอคอนแล้ว -->
-    <div class="flex flex-wrap items-center justify-center gap-2 bg-slate-50 p-1.5 md:p-2 rounded-2xl shadow-inner border border-slate-200 flex-shrink-0">
-        <button onclick="syncData(true)" class="flex items-center justify-center w-9 h-9 bg-slate-800 text-white rounded-xl hover:bg-slate-700 transition-colors shadow-sm" title="ซิงค์ข้อมูล">
-            <i class="fas fa-sync-alt" id="sync-icon"></i>
-        </button>
-        <button type="button" onclick="logOutAdmin()" id="btn-logout" class="flex items-center justify-center w-9 h-9 bg-rose-600 text-white rounded-xl hover:bg-rose-700 transition-colors shadow-sm" title="ออกจากระบบ">
-            <i class="fas fa-sign-out-alt"></i>
-        </button>
-        <div class="w-px h-6 bg-slate-200 mx-1"></div> 
-        <div class="flex items-center gap-1.5 bg-brand-50 p-1 rounded-xl border border-brand-100">
-            <select id="admin-eval-round" class="bg-white border-none rounded-lg py-1.5 px-2 text-xs font-semibold text-brand-800 outline-none cursor-pointer focus:ring-1 focus:ring-brand-400">
-                <option value="ครั้งที่ 1">ครั้งที่ 1</option>
-                <option value="ครั้งที่ 2">ครั้งที่ 2</option>
-                <option value="ครั้งที่ 3">ครั้งที่ 3</option>
-                <option value="ครั้งที่ 4">ครั้งที่ 4</option>
-            </select>
-            <button type="button" onclick="saveEvalRoundSettings()" id="btn-save-round" class="flex items-center justify-center px-3 py-1.5 bg-brand-600 text-white rounded-lg text-xs font-bold hover:bg-brand-700 transition-colors shadow-sm" title="บันทึกรอบการประเมิน">
-                <i class="fas fa-save"></i>
-            </button>
-        </div>
-    </div>
-    
-</div>
+            <!-- [อัปเดต] กล่อง admin-sticky-header ที่ใช้ตรึงเมนูและแถบเครื่องมือ -->
+            <div id="admin-sticky-header" class="sticky top-0 z-[100] bg-white/95 backdrop-blur-xl border-b border-slate-200 shadow-sm pt-6 pb-3 px-4 md:px-8 mb-6 rounded-b-3xl">
                 
-                <div id="global-toolbar-container" class="w-full min-h-[42px] mt-3 pt-2 border-t border-slate-100 hidden transition-all duration-300"></div>
-            </div>
+                <div class="flex flex-col xl:flex-row justify-between items-center gap-4">
+        
+                    <!-- 1. ส่วนหัวข้อ (ซ้าย) + สถานะ Auto-save -->
+                    <div class="flex-shrink-0 text-center xl:text-left flex items-center">
+                        <div>
+                            <h2 class="text-3xl md:text-4xl font-semibold text-slate-800 leading-tight">จัดการระบบ</h2>
+                            <span class="text-amber-500 font-medium tracking-widest uppercase text-[10px] md:text-xs">Admin Dashboard</span>
+                        </div>
+                        <!-- ข้อความแจ้งสถานะ Auto-save -->
+                        <span id="auto-save-status" class="text-xs font-medium text-slate-500 ml-4 px-3 py-1 bg-slate-100 rounded-full opacity-0 transition-opacity duration-300 hidden md:inline-flex items-center gap-1.5 shadow-inner"></span>
+                    </div>
+                    
+                    <!-- [อัปเดต] 2. ส่วนเมนู (กลาง) - ย่อข้อความแล้ว -->
+                    <div class="flex flex-1 overflow-x-auto gap-2 hide-scrollbar w-full xl:justify-center" id="admin-horizontal-menu">
+                        <button type="button" onclick="selectAdminTab('profile')" id="sidebar-tab-profile" class="admin-sidebar-btn flex-shrink-0 px-4 py-2 rounded-xl text-xs md:text-sm font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 flex items-center transition-all shadow-sm active-tab">
+                            <i class="fas fa-user-circle mr-1.5"></i> ข้อมูลส่วนตัว
+                        </button>
+                        <button type="button" onclick="selectAdminTab('workload')" id="sidebar-tab-workload" class="admin-sidebar-btn flex-shrink-0 px-4 py-2 rounded-xl text-xs md:text-sm font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 flex items-center transition-all shadow-sm">
+                            <i class="fas fa-chalkboard-teacher mr-1.5"></i> ภาระงาน
+                        </button>
+                        <button type="button" onclick="selectAdminTab('portfolio')" id="sidebar-tab-portfolio" class="admin-sidebar-btn flex-shrink-0 px-4 py-2 rounded-xl text-xs md:text-sm font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 flex items-center transition-all shadow-sm">
+                            <i class="fas fa-briefcase mr-1.5"></i> ผลงาน
+                        </button>
+                        <button type="button" onclick="selectAdminTab('evals_1')" id="sidebar-tab-evals_1" class="admin-sidebar-btn flex-shrink-0 px-4 py-2 rounded-xl text-xs md:text-sm font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 flex items-center transition-all shadow-sm">
+                            <i class="fas fa-shield-alt mr-1.5"></i> องค์ประกอบที่ 1
+                        </button>
+                        <button type="button" onclick="selectAdminTab('evals_2')" id="sidebar-tab-evals_2" class="admin-sidebar-btn flex-shrink-0 px-4 py-2 rounded-xl text-xs md:text-sm font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 flex items-center transition-all shadow-sm">
+                            <i class="fas fa-laptop-code mr-1.5"></i> องค์ประกอบที่ 2
+                        </button>
+                    </div>
 
+                    <!-- [อัปเดต] 3. ส่วนปุ่มจัดการ (ขวา) - เปลี่ยนเป็นไอคอนแล้ว -->
+                    <div class="flex flex-wrap items-center justify-center gap-2 bg-slate-50 p-1.5 md:p-2 rounded-2xl shadow-inner border border-slate-200 flex-shrink-0">
+                        <button onclick="syncData(true)" class="flex items-center justify-center w-9 h-9 bg-slate-800 text-white rounded-xl hover:bg-slate-700 transition-colors shadow-sm" title="ซิงค์ข้อมูล">
+                            <i class="fas fa-sync-alt" id="sync-icon"></i>
+                        </button>
+                        <button type="button" onclick="logOutAdmin()" id="btn-logout" class="flex items-center justify-center w-9 h-9 bg-rose-600 text-white rounded-xl hover:bg-rose-700 transition-colors shadow-sm" title="ออกจากระบบ">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                        <div class="w-px h-6 bg-slate-200 mx-1"></div> 
+                        <div class="flex items-center gap-1.5 bg-brand-50 p-1 rounded-xl border border-brand-100">
+                            <select id="admin-eval-round" class="bg-white border-none rounded-lg py-1.5 px-2 text-xs font-semibold text-brand-800 outline-none cursor-pointer focus:ring-1 focus:ring-brand-400">
+                                <option value="ครั้งที่ 1">ครั้งที่ 1</option>
+                                <option value="ครั้งที่ 2">ครั้งที่ 2</option>
+                                <option value="ครั้งที่ 3">ครั้งที่ 3</option>
+                                <option value="ครั้งที่ 4">ครั้งที่ 4</option>
+                            </select>
+                            <button type="button" onclick="saveEvalRoundSettings()" id="btn-save-round" class="flex items-center justify-center px-3 py-1.5 bg-brand-600 text-white rounded-lg text-xs font-bold hover:bg-brand-700 transition-colors shadow-sm" title="บันทึกรอบการประเมิน">
+                                <i class="fas fa-save"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div> <!-- ปิด flex-col xl:flex-row -->
+                
+                <!-- แถบ Toolbar ของ TinyMCE จะมาโผล่ตรงนี้ และจะถูกล็อกติดขอบจอด้านบน -->
+                <div id="global-toolbar-container" class="w-full min-h-[42px] mt-3 pt-2 border-t border-slate-100 hidden transition-all duration-300"></div>
+                
+            </div> <!-- ปิด admin-sticky-header -->
+
+            <!-- ส่วนแก้ไขข้อมูลหลัก -->
             <div class="px-4 md:px-8 w-full transition-all duration-300 relative" id="admin-main-content" data-aos="fade-up" data-aos-delay="100">
                 <div class="premium-card p-8 border border-slate-100 space-y-6">
                     <div class="flex justify-between items-center border-b border-slate-100 pb-4">
@@ -1120,51 +1125,52 @@
             nav.classList.toggle('expanded');
         };
 
+        // [อัปเดต] ให้ระบบจำหน้าล่าสุดและแท็บแอดมินล่าสุดได้เวลากดรีโหลด
         window.goToPage = function(pageNumber, isInitial = false) {
-    pageNumber = parseInt(pageNumber) || 1;
-    sessionStorage.setItem('krutest_page', pageNumber);
+            pageNumber = parseInt(pageNumber) || 1;
+            sessionStorage.setItem('krutest_page', pageNumber);
 
-    window.syncData(false);
+            window.syncData(false);
 
-    document.querySelectorAll('.page-section').forEach(el => {
-        el.style.display = 'none';
-        el.classList.remove('active');
-    });
-    const targetPage = document.getElementById(`page-${pageNumber}`);
-    if(targetPage) {
-        targetPage.style.display = 'block';
-        setTimeout(() => {
-            targetPage.classList.add('active');
-            try { if (typeof AOS !== 'undefined') AOS.refresh(); } catch(e){}
-        }, 30);
-    }
-    
-    const footer = document.getElementById('global-footer');
-    if(footer) {
-        if(pageNumber === 5 || pageNumber === 6) {
-            footer.style.display = 'none';
-        } else {
-            footer.style.display = 'block';
-        }
-    }
+            document.querySelectorAll('.page-section').forEach(el => {
+                el.style.display = 'none';
+                el.classList.remove('active');
+            });
+            const targetPage = document.getElementById(`page-${pageNumber}`);
+            if(targetPage) {
+                targetPage.style.display = 'block';
+                setTimeout(() => {
+                    targetPage.classList.add('active');
+                    try { if (typeof AOS !== 'undefined') AOS.refresh(); } catch(e){}
+                }, 30);
+            }
+            
+            const footer = document.getElementById('global-footer');
+            if(footer) {
+                if(pageNumber === 5 || pageNumber === 6) {
+                    footer.style.display = 'none';
+                } else {
+                    footer.style.display = 'block';
+                }
+            }
 
-    const nav = document.getElementById('navbar');
-    if(pageNumber >= 2) { 
-        nav.classList.remove('hidden'); nav.classList.add('flex'); 
-    } else { 
-        nav.classList.add('hidden'); nav.classList.remove('flex'); 
-    }
-    
-    // --- จุดที่เพิ่มการจำแท็บแอดมิน ---
-    if(pageNumber === 8) {
-        let savedAdminTab = sessionStorage.getItem('krutest_admin_tab') || 'profile';
-        window.selectAdminTab(savedAdminTab);
-    } else if(!isInitial) {
-        try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch(e) {}
-    }
-    
-    nav.classList.remove('expanded');
-};
+            const nav = document.getElementById('navbar');
+            if(pageNumber >= 2) { 
+                nav.classList.remove('hidden'); nav.classList.add('flex'); 
+            } else { 
+                nav.classList.add('hidden'); nav.classList.remove('flex'); 
+            }
+            
+            // --- จุดที่เพิ่มการจำแท็บแอดมิน ---
+            if(pageNumber === 8) {
+                let savedAdminTab = sessionStorage.getItem('krutest_admin_tab') || 'profile';
+                window.selectAdminTab(savedAdminTab);
+            } else if(!isInitial) {
+                try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch(e) {}
+            }
+            
+            nav.classList.remove('expanded');
+        };
 
         window.startPresentation = function() { window.goToPage(2); };
 
@@ -1264,26 +1270,27 @@
             }
         };
 
+        // [อัปเดต] แก้ไข subtitleSize เป็น subSize แล้ว
         function loadPresentationFontSettings() {
-    let fFam = db.settings.PresFontFamily || "'Kanit', sans-serif";
-    let tSize = db.settings.PresTitleSize || "26px";
-    let subSize = db.settings.PresSubtitleSize || "22px"; // ประกาศตัวแปรชื่อ subSize ไว้
-    let fWeight = db.settings.PresFontWeight || "700";
+            let fFam = db.settings.PresFontFamily || "'Kanit', sans-serif";
+            let tSize = db.settings.PresTitleSize || "26px";
+            let subSize = db.settings.PresSubtitleSize || "22px";
+            let fWeight = db.settings.PresFontWeight || "700";
 
-    if(document.getElementById('admin-font-family')) document.getElementById('admin-font-family').value = fFam;
-    if(document.getElementById('admin-title-size')) document.getElementById('admin-title-size').value = tSize;
-    if(document.getElementById('admin-subtitle-size')) document.getElementById('admin-subtitle-size').value = subSize;
-    if(document.getElementById('admin-font-weight')) document.getElementById('admin-font-weight').value = fWeight;
+            if(document.getElementById('admin-font-family')) document.getElementById('admin-font-family').value = fFam;
+            if(document.getElementById('admin-title-size')) document.getElementById('admin-title-size').value = tSize;
+            if(document.getElementById('admin-subtitle-size')) document.getElementById('admin-subtitle-size').value = subSize;
+            if(document.getElementById('admin-font-weight')) document.getElementById('admin-font-weight').value = fWeight;
 
-    document.querySelectorAll('#page-5, #page-6').forEach(section => {
-        section.style.fontFamily = fFam;
-        section.querySelectorAll('.dynamic-presentation-title').forEach((el, index) => {
-            if (index === 0 || index === 1) { el.style.fontSize = tSize; }
-            else { el.style.fontSize = subSize; } // <--- แก้ไขจุดนี้ (เดิมเป็น subtitleSize ทำให้เกิด Error)
-            el.style.fontWeight = fWeight;
-        });
-    });
-}
+            document.querySelectorAll('#page-5, #page-6').forEach(section => {
+                section.style.fontFamily = fFam;
+                section.querySelectorAll('.dynamic-presentation-title').forEach((el, index) => {
+                    if (index === 0 || index === 1) { el.style.fontSize = tSize; }
+                    else { el.style.fontSize = subSize; } 
+                    el.style.fontWeight = fWeight;
+                });
+            });
+        }
 
         window.saveWorkloadSettings = async function() {
             const term = document.getElementById('wl-setting-term').value;
@@ -1522,7 +1529,7 @@
                         }
                     });
 
-                   editor.on('NodeChange SetContent', function (e) {
+                    editor.on('NodeChange SetContent', function (e) {
                         const images = editor.dom.select('img');
                         images.forEach(img => {
                             if (!img.getAttribute('data-styled')) {
@@ -1538,17 +1545,16 @@
                         });
                     });
 
-                    // --- เพิ่มโค้ดดักจับการพิมพ์ตรงนี้ ---
+                    // [อัปเดต] ดักจับการพิมพ์ให้ระบบ Auto-save ทำงาน
                     editor.on('keyup change ExecCommand', function (e) {
                         if(typeof window.triggerAutoSave === 'function') {
                             window.triggerAutoSave();
                         }
                     });
-                    // -----------------------------
-
                 }
             });
         };
+        
         window.insertStyledSubtopicDirectly = function(editor, subTitle) {
             const sec = document.getElementById('admin-section-select').value;
             let borderStr, borderLeftStr, iconBg, iconColor, titleColor, shadowStr;
@@ -2201,27 +2207,26 @@
             } 
         };
 
+        // [อัปเดต] ให้ระบบจำแท็บในหน้าแอดมินได้
         window.selectAdminTab = function(sectionVal) {
-    document.getElementById('admin-section-select').value = sectionVal;
-    
-    // --- จุดที่บันทึกแท็บล่างสุดลงระบบ ---
-    sessionStorage.setItem('krutest_admin_tab', sectionVal);
-    
-    document.querySelectorAll('.admin-sidebar-btn').forEach(btn => btn.classList.remove('active-tab'));
-    const activeBtn = document.getElementById(`sidebar-tab-${sectionVal}`);
-    if(activeBtn) activeBtn.classList.add('active-tab');
+            document.getElementById('admin-section-select').value = sectionVal;
+            sessionStorage.setItem('krutest_admin_tab', sectionVal);
+            
+            document.querySelectorAll('.admin-sidebar-btn').forEach(btn => btn.classList.remove('active-tab'));
+            const activeBtn = document.getElementById(`sidebar-tab-${sectionVal}`);
+            if(activeBtn) activeBtn.classList.add('active-tab');
 
-    const titleMap = {
-        'profile': 'ตั้งค่าข้อมูลส่วนตัว & หน้าแรก',
-        'workload': 'จัดการภาระงาน',
-        'portfolio': 'จัดการผลงาน',
-        'evals_1': 'จัดการองค์ประกอบที่ 1 ด้านวิชาชีพ',
-        'evals_2': 'จัดการองค์ประกอบที่ 2 ด้านคุณลักษณะส่วนบุคคล'
-    };
-    document.getElementById('admin-section-title').innerText = titleMap[sectionVal] || 'จัดการระบบ';
+            const titleMap = {
+                'profile': 'ตั้งค่าข้อมูลส่วนตัว & หน้าแรก',
+                'workload': 'จัดการภาระงาน',
+                'portfolio': 'จัดการผลงาน',
+                'evals_1': 'จัดการองค์ประกอบที่ 1 ด้านวิชาชีพ',
+                'evals_2': 'จัดการองค์ประกอบที่ 2 ด้านคุณลักษณะส่วนบุคคล'
+            };
+            document.getElementById('admin-section-title').innerText = titleMap[sectionVal] || 'จัดการระบบ';
 
-    window.changeAdminSection();
-};
+            window.changeAdminSection();
+        };
 
         window.changeAdminSection = function() {
             document.querySelectorAll('.admin-form-group').forEach(el => el.classList.remove('active'));
@@ -2421,7 +2426,6 @@
             window.populateEditForm();
         };
 
-        /* [แก้ไข] อัปเดตช่อง "หัวข้อหลัก" และ "รายการประเมิน" ให้อ่านอย่างเดียวในฟอร์มแบบรวม */
         window.renderEvalsAllForm = function(sec) {
             const container = document.getElementById('evals-all-container');
             container.innerHTML = '';
@@ -2484,6 +2488,7 @@
             }
         };
 
+        // [อัปเดต] เซฟเฉพาะคอลัมน์ที่จำเป็น (ตัด source ออก)
         window.saveSingleEval = async function(id) {
             const sec = document.getElementById('admin-section-select').value;
             let card = document.querySelector(`.eval-all-item[data-id="${id}"]`);
@@ -2492,7 +2497,6 @@
             let descEditorId = `eval_all_${id}_desc`;
             let editorContent = tinymce.get(descEditorId) ? tinymce.get(descEditorId).getContent() : card.querySelector('.eval-desc').innerHTML;
 
-            /* [แก้ไข] บันทึกเฉพาะข้อมูลที่แก้ไขได้จริง (ตัด source_sheet / source_id ออก) */
             let dataToSave = {
                 subtopic: card.querySelector('.eval-subtitle').value,
                 description: editorContent,
@@ -2510,6 +2514,7 @@
             }
         };
 
+        // [อัปเดต] เซฟเฉพาะคอลัมน์ที่จำเป็น (ตัด source ออก)
         window.saveAllEvals = async function() {
             const sec = document.getElementById('admin-section-select').value;
             let items = document.querySelectorAll('.eval-all-item');
@@ -2520,7 +2525,6 @@
                     let descEditorId = `eval_all_${id}_desc`;
                     let editorContent = tinymce.get(descEditorId) ? tinymce.get(descEditorId).getContent() : card.querySelector('.eval-desc').innerHTML;
 
-                    /* [แก้ไข] บันทึกเฉพาะข้อมูลที่แก้ไขได้จริง (ตัด source_sheet / source_id ออก) */
                     let dataToSave = {
                         subtopic: card.querySelector('.eval-subtitle').value,
                         description: editorContent,
@@ -2594,7 +2598,6 @@
                         let id = document.getElementById('edit-item-id').value;
                         let editorContent = tinymce.get('ev-f-desc') ? tinymce.get('ev-f-desc').getContent() : document.getElementById('ev-f-desc').innerHTML;
                         
-                        /* [แก้ไข] บันทึกเฉพาะข้อมูลที่แก้ไขได้จริง (ตัด source_sheet / source_id ออก) */
                         let saveObj = { 
                             subtopic: document.getElementById('ev-f-subtitle').value, 
                             description: editorContent,
@@ -2605,7 +2608,6 @@
                             const { error } = await supabaseClient.from('eval_items').update(saveObj).eq('item_uid', id);
                             if(error) throw error;
                         } else {
-                            // กรณีเพิ่มรายการใหม่
                             saveObj.section_id = sec === 'evals_1' ? 1 : 2;
                             const { error } = await supabaseClient.from('eval_items').insert([saveObj]);
                             if(error) throw error;
@@ -2622,104 +2624,99 @@
                 if(btn) { btn.innerHTML = originalText; btn.disabled = false; }
             }
         };
+
+        // [อัปเดต] ==========================================
+        // ระบบบันทึกอัตโนมัติ (Auto-save with Debounce)
         // ==========================================
-// ระบบบันทึกอัตโนมัติ (Auto-save with Debounce)
-// ==========================================
-let autoSaveTimeout = null;
+        let autoSaveTimeout = null;
 
-window.triggerAutoSave = function() {
-    const statusEl = document.getElementById('auto-save-status');
-    if (statusEl) {
-        statusEl.innerHTML = '<i class="fas fa-spinner fa-spin text-brand-500"></i> กำลังบันทึก...';
-        statusEl.classList.remove('opacity-0');
-    }
-
-    // ล้างตัวนับเวลาเดิมออก เพื่อรอให้ผู้ใช้หยุดพิมพ์จริงๆ
-    if (autoSaveTimeout) clearTimeout(autoSaveTimeout);
-
-    // ตั้งเวลา 2 วินาที ถ้าไม่มีการพิมพ์เพิ่ม จะแอบเซฟทันที
-    autoSaveTimeout = setTimeout(async () => {
-        await window.performSilentSave();
-    }, 2000); 
-};
-
-window.performSilentSave = async function() {
-    const sec = document.getElementById('admin-section-select').value;
-    const mode = document.getElementById('admin-mode').value;
-    
-    // บันทึกเฉพาะข้อมูลขององค์ประกอบที่ 1 และ 2
-    if(sec !== 'evals_1' && sec !== 'evals_2') return;
-
-    try {
-        if(mode === 'edit_all') {
-            let items = document.querySelectorAll('.eval-all-item');
-            for (let card of items) {
-                let id = card.getAttribute('data-id');
-                let descEditorId = `eval_all_${id}_desc`;
-                let editor = tinymce.get(descEditorId);
-                let editorContent = editor ? editor.getContent() : card.querySelector('.eval-desc').innerHTML;
-                
-                let dataToSave = {
-                    subtopic: card.querySelector('.eval-subtitle').value,
-                    description: editorContent,
-                    updated_at: new Date()
-                };
-                await supabaseClient.from('eval_items').update(dataToSave).eq('item_uid', id);
+        window.triggerAutoSave = function() {
+            const statusEl = document.getElementById('auto-save-status');
+            if (statusEl) {
+                statusEl.innerHTML = '<i class="fas fa-spinner fa-spin text-brand-500"></i> กำลังบันทึก...';
+                statusEl.classList.remove('opacity-0');
             }
-        } else {
-            let id = document.getElementById('edit-item-id').value;
-            if(!id) return; // กรณีโหมดเพิ่มใหม่ จะยังไม่ Auto-save
+
+            if (autoSaveTimeout) clearTimeout(autoSaveTimeout);
+
+            autoSaveTimeout = setTimeout(async () => {
+                await window.performSilentSave();
+            }, 2000); 
+        };
+
+        window.performSilentSave = async function() {
+            const sec = document.getElementById('admin-section-select').value;
+            const mode = document.getElementById('admin-mode').value;
             
-            let editorContent = tinymce.get('ev-f-desc') ? tinymce.get('ev-f-desc').getContent() : document.getElementById('ev-f-desc').innerHTML;
-            let saveObj = { 
-                subtopic: document.getElementById('ev-f-subtitle').value, 
-                description: editorContent,
-                updated_at: new Date()
-            };
-            await supabaseClient.from('eval_items').update(saveObj).eq('item_uid', id);
-        }
+            // บันทึกเฉพาะข้อมูลขององค์ประกอบที่ 1 และ 2
+            if(sec !== 'evals_1' && sec !== 'evals_2') return;
 
-        // แจ้งเตือนว่าบันทึกสำเร็จ (แล้วซ่อนไปใน 3 วิ)
-        const statusEl = document.getElementById('auto-save-status');
-        if (statusEl) {
-            statusEl.innerHTML = '<i class="fas fa-check-circle text-brand-500"></i> บันทึกอัตโนมัติแล้ว';
-            setTimeout(() => statusEl.classList.add('opacity-0'), 3000); 
-        }
-        
-        // แอบอัปเดตตัวแปร db แบบเงียบๆ โดยไม่กระชากหน้าจอ
-        await window.syncDataBackground();
-        
-    } catch(e) {
-        const statusEl = document.getElementById('auto-save-status');
-        if (statusEl) statusEl.innerHTML = '<i class="fas fa-exclamation-circle text-rose-500"></i> ขัดข้อง';
-    }
-};
+            try {
+                if(mode === 'edit_all') {
+                    let items = document.querySelectorAll('.eval-all-item');
+                    for (let card of items) {
+                        let id = card.getAttribute('data-id');
+                        let descEditorId = `eval_all_${id}_desc`;
+                        let editor = tinymce.get(descEditorId);
+                        let editorContent = editor ? editor.getContent() : card.querySelector('.eval-desc').innerHTML;
+                        
+                        let dataToSave = {
+                            subtopic: card.querySelector('.eval-subtitle').value,
+                            description: editorContent,
+                            updated_at: new Date()
+                        };
+                        await supabaseClient.from('eval_items').update(dataToSave).eq('item_uid', id);
+                    }
+                } else {
+                    let id = document.getElementById('edit-item-id').value;
+                    if(!id) return; 
+                    
+                    let editorContent = tinymce.get('ev-f-desc') ? tinymce.get('ev-f-desc').getContent() : document.getElementById('ev-f-desc').innerHTML;
+                    let saveObj = { 
+                        subtopic: document.getElementById('ev-f-subtitle').value, 
+                        description: editorContent,
+                        updated_at: new Date()
+                    };
+                    await supabaseClient.from('eval_items').update(saveObj).eq('item_uid', id);
+                }
 
-window.syncDataBackground = async function() {
-    // ดึงข้อมูลใหม่เข้าหน่วยความจำ เพื่อให้ข้อมูลตรงกัน (ไม่ใช้ renderAllPages จะได้ไม่กวนการพิมพ์)
-    const { data: e1Raw } = await supabaseClient.from('eval_items').select(`*, eval_criteria(name), eval_sections(name)`).in('section_id', [1, 2]).order('section_id').order('criteria_id').order('sort_order');
-    const { data: e2Raw } = await supabaseClient.from('eval_items').select(`*, eval_criteria(name), eval_sections(name)`).eq('section_id', 3).order('criteria_id').order('sort_order');
-    
-    let e1 = [], e2 = [];
-    if (e1Raw) e1Raw.forEach(row => e1.push({'ID': row.item_uid, 'หัวข้อ': row.eval_sections?.name||'', 'รายการประเมิน': row.eval_criteria?.name||'', 'หัวข้อย่อย': row.subtopic||null, 'คำอธิบาย': row.description||''}));
-    if (e2Raw) e2Raw.forEach(row => e2.push({'ID': row.item_uid, 'หัวข้อ': row.eval_sections?.name||'', 'รายการประเมิน': row.eval_criteria?.name||'', 'หัวข้อย่อย': row.subtopic||null, 'คำอธิบาย': row.description||''}));
-    
-    db.evals_1 = e1;
-    db.evals_2 = e2;
-    localStorage.setItem('krutest_fast_db', JSON.stringify(db));
-};
+                const statusEl = document.getElementById('auto-save-status');
+                if (statusEl) {
+                    statusEl.innerHTML = '<i class="fas fa-check-circle text-brand-500"></i> บันทึกอัตโนมัติแล้ว';
+                    setTimeout(() => statusEl.classList.add('opacity-0'), 3000); 
+                }
+                
+                await window.syncDataBackground();
+                
+            } catch(e) {
+                const statusEl = document.getElementById('auto-save-status');
+                if (statusEl) statusEl.innerHTML = '<i class="fas fa-exclamation-circle text-rose-500"></i> ขัดข้อง';
+            }
+        };
 
-// ดักจับการพิมพ์ในกล่อง Input ปกติ
-document.addEventListener("DOMContentLoaded", () => {
-    const mainContent = document.getElementById('admin-main-content');
-    if(mainContent) {
-        mainContent.addEventListener('input', function(e) {
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-                window.triggerAutoSave();
+        window.syncDataBackground = async function() {
+            const { data: e1Raw } = await supabaseClient.from('eval_items').select(`*, eval_criteria(name), eval_sections(name)`).in('section_id', [1, 2]).order('section_id').order('criteria_id').order('sort_order');
+            const { data: e2Raw } = await supabaseClient.from('eval_items').select(`*, eval_criteria(name), eval_sections(name)`).eq('section_id', 3).order('criteria_id').order('sort_order');
+            
+            let e1 = [], e2 = [];
+            if (e1Raw) e1Raw.forEach(row => e1.push({'ID': row.item_uid, 'หัวข้อ': row.eval_sections?.name||'', 'รายการประเมิน': row.eval_criteria?.name||'', 'หัวข้อย่อย': row.subtopic||null, 'คำอธิบาย': row.description||''}));
+            if (e2Raw) e2Raw.forEach(row => e2.push({'ID': row.item_uid, 'หัวข้อ': row.eval_sections?.name||'', 'รายการประเมิน': row.eval_criteria?.name||'', 'หัวข้อย่อย': row.subtopic||null, 'คำอธิบาย': row.description||''}));
+            
+            db.evals_1 = e1;
+            db.evals_2 = e2;
+            localStorage.setItem('krutest_fast_db', JSON.stringify(db));
+        };
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const mainContent = document.getElementById('admin-main-content');
+            if(mainContent) {
+                mainContent.addEventListener('input', function(e) {
+                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+                        window.triggerAutoSave();
+                    }
+                });
             }
         });
-    }
-});
     </script>
 </body>
 </html>
