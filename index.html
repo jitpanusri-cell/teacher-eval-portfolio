@@ -1721,7 +1721,7 @@
                         const { data: publicData } = supabaseClient.storage.from('media').getPublicUrl(`docs/${fileName}`);
                         insertContentToEditor(type, publicData.publicUrl);
                     } catch(err) {
-                        window.showToast("อัปโหลดไม่สำเร็จ", "error");
+                        window.showToast("อัปโหลดไม่สำเร็จ (เช็กการตั้งค่า Storage Bucket)", "error");
                     }
                 } else if (urlInput !== "") {
                     insertContentToEditor(type, urlInput);
@@ -1816,6 +1816,7 @@
             return url;
         };
 
+        /* [แก้ไข] ปรับ query ตามที่คุณแจ้ง เพื่อ Join ข้อมูล name จาก eval_criteria และ eval_sections */
         window.syncData = async function(showAlert = false) {
             const btnIcon = document.getElementById('sync-icon');
             if(btnIcon) btnIcon.classList.add('fa-spin');
@@ -1843,19 +1844,32 @@
                     'รูปภาพ': row.image_url
                 }));
 
-                const { data: evRaw, error: err4 } = await supabaseClient.from('eval_items').select('*').order('item_uid', { ascending: true });
+                const { data: evRaw, error: err4 } = await supabaseClient
+                    .from('eval_items')
+                    .select(`
+                        *,
+                        eval_criteria ( name ),
+                        eval_sections ( name )
+                    `)
+                    .order('sort_order');
+
                 let e1 = [], e2 = [];
                 if (evRaw) {
                     evRaw.forEach(row => {
+                        /* [แก้ไข] แมปปิ้งข้อมูลชื่อจริง (name) เข้าไปใน object */
+                        let secName = (row.eval_sections && row.eval_sections.name) ? row.eval_sections.name : (row.source_sheet || '');
+                        let critName = (row.eval_criteria && row.eval_criteria.name) ? row.eval_criteria.name : (row.source_id || '');
+                        
                         let obj = {
                             'ID': row.item_uid,
-                            'หัวข้อ': row.source_sheet,
-                            'รายการประเมิน': row.source_id,
-                            'หัวข้อย่อย': row.subtopic,
+                            'หัวข้อ': secName,
+                            'รายการประเมิน': critName,
+                            'หัวข้อย่อย': row.subtopic || null, /* ให้เป็น null หากไม่มีข้อมูลเพื่อรองรับการซ่อน */
                             'คำอธิบาย': row.description
                         };
-                        if (row.section_id === 1) e1.push(obj);
-                        else if (row.section_id === 2) e2.push(obj);
+                        
+                        if (row.section_id === 1 || secName.includes('องค์ประกอบที่ 1')) e1.push(obj);
+                        else if (row.section_id === 2 || secName.includes('องค์ประกอบที่ 2')) e2.push(obj);
                     });
                 }
 
@@ -2090,10 +2104,12 @@
                 return;
             }
 
-            document.getElementById(`slide${side}-category`).innerText = data['หัวข้อ'] || 'หัวข้อหลัก';
-            document.getElementById(`slide${side}-title`).innerText = data['รายการประเมิน'] || '-';
+            /* [แก้ไข] ดึงข้อมูลจาก object ที่ map ไว้แล้วมาแสดงผล (หัวข้อ = eval_sections.name, รายการประเมิน = eval_criteria.name) */
+            document.getElementById(`slide${side}-category`).innerText = data['หัวข้อ'] || '';
+            document.getElementById(`slide${side}-title`).innerText = data['รายการประเมิน'] || '';
             
             const subtitleEl = document.getElementById(`slide${side}-subtitle`);
+            /* [แก้ไข] เช็คค่า subtopic ก่อนแสดงผล ป้องกันบรรทัดว่างหรือคำว่า null */
             if (data['หัวข้อย่อย'] && data['หัวข้อย่อย'].trim() !== "") {
                 subtitleEl.innerText = data['หัวข้อย่อย'];
                 subtitleEl.style.display = 'block';
