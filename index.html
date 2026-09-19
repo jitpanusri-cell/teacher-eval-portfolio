@@ -1118,46 +1118,50 @@
         };
 
         window.goToPage = function(pageNumber, isInitial = false) {
-            pageNumber = parseInt(pageNumber) || 1;
-            sessionStorage.setItem('krutest_page', pageNumber);
+    pageNumber = parseInt(pageNumber) || 1;
+    sessionStorage.setItem('krutest_page', pageNumber);
 
-            window.syncData(false);
+    window.syncData(false);
 
-            document.querySelectorAll('.page-section').forEach(el => {
-                el.style.display = 'none';
-                el.classList.remove('active');
-            });
-            const targetPage = document.getElementById(`page-${pageNumber}`);
-            if(targetPage) {
-                targetPage.style.display = 'block';
-                setTimeout(() => {
-                    targetPage.classList.add('active');
-                    try { if (typeof AOS !== 'undefined') AOS.refresh(); } catch(e){}
-                }, 30);
-            }
-            
-            const footer = document.getElementById('global-footer');
-            if(footer) {
-                if(pageNumber === 5 || pageNumber === 6) {
-                    footer.style.display = 'none';
-                } else {
-                    footer.style.display = 'block';
-                }
-            }
+    document.querySelectorAll('.page-section').forEach(el => {
+        el.style.display = 'none';
+        el.classList.remove('active');
+    });
+    const targetPage = document.getElementById(`page-${pageNumber}`);
+    if(targetPage) {
+        targetPage.style.display = 'block';
+        setTimeout(() => {
+            targetPage.classList.add('active');
+            try { if (typeof AOS !== 'undefined') AOS.refresh(); } catch(e){}
+        }, 30);
+    }
+    
+    const footer = document.getElementById('global-footer');
+    if(footer) {
+        if(pageNumber === 5 || pageNumber === 6) {
+            footer.style.display = 'none';
+        } else {
+            footer.style.display = 'block';
+        }
+    }
 
-            const nav = document.getElementById('navbar');
-            if(pageNumber >= 2) { 
-                nav.classList.remove('hidden'); nav.classList.add('flex'); 
-            } else { 
-                nav.classList.add('hidden'); nav.classList.remove('flex'); 
-            }
-            if(pageNumber === 8) {
-                window.changeAdminSection();
-            } else if(!isInitial) {
-                try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch(e) {}
-            }
-            nav.classList.remove('expanded');
-        };
+    const nav = document.getElementById('navbar');
+    if(pageNumber >= 2) { 
+        nav.classList.remove('hidden'); nav.classList.add('flex'); 
+    } else { 
+        nav.classList.add('hidden'); nav.classList.remove('flex'); 
+    }
+    
+    // --- จุดที่เพิ่มการจำแท็บแอดมิน ---
+    if(pageNumber === 8) {
+        let savedAdminTab = sessionStorage.getItem('krutest_admin_tab') || 'profile';
+        window.selectAdminTab(savedAdminTab);
+    } else if(!isInitial) {
+        try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch(e) {}
+    }
+    
+    nav.classList.remove('expanded');
+};
 
         window.startPresentation = function() { window.goToPage(2); };
 
@@ -2187,23 +2191,26 @@
         };
 
         window.selectAdminTab = function(sectionVal) {
-            document.getElementById('admin-section-select').value = sectionVal;
-            
-            document.querySelectorAll('.admin-sidebar-btn').forEach(btn => btn.classList.remove('active-tab'));
-            const activeBtn = document.getElementById(`sidebar-tab-${sectionVal}`);
-            if(activeBtn) activeBtn.classList.add('active-tab');
+    document.getElementById('admin-section-select').value = sectionVal;
+    
+    // --- จุดที่บันทึกแท็บล่างสุดลงระบบ ---
+    sessionStorage.setItem('krutest_admin_tab', sectionVal);
+    
+    document.querySelectorAll('.admin-sidebar-btn').forEach(btn => btn.classList.remove('active-tab'));
+    const activeBtn = document.getElementById(`sidebar-tab-${sectionVal}`);
+    if(activeBtn) activeBtn.classList.add('active-tab');
 
-            const titleMap = {
-                'profile': 'ตั้งค่าข้อมูลส่วนตัว & หน้าแรก',
-                'workload': 'จัดการภาระงาน',
-                'portfolio': 'จัดการผลงาน',
-                'evals_1': 'จัดการองค์ประกอบที่ 1 ด้านวิชาชีพ',
-                'evals_2': 'จัดการองค์ประกอบที่ 2 ด้านคุณลักษณะส่วนบุคคล'
-            };
-            document.getElementById('admin-section-title').innerText = titleMap[sectionVal] || 'จัดการระบบ';
+    const titleMap = {
+        'profile': 'ตั้งค่าข้อมูลส่วนตัว & หน้าแรก',
+        'workload': 'จัดการภาระงาน',
+        'portfolio': 'จัดการผลงาน',
+        'evals_1': 'จัดการองค์ประกอบที่ 1 ด้านวิชาชีพ',
+        'evals_2': 'จัดการองค์ประกอบที่ 2 ด้านคุณลักษณะส่วนบุคคล'
+    };
+    document.getElementById('admin-section-title').innerText = titleMap[sectionVal] || 'จัดการระบบ';
 
-            window.changeAdminSection();
-        };
+    window.changeAdminSection();
+};
 
         window.changeAdminSection = function() {
             document.querySelectorAll('.admin-form-group').forEach(el => el.classList.remove('active'));
