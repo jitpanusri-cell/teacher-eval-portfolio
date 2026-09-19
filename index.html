@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>รายงานประเมินครูผู้ช่วย - นายจิตรภาณุ ศรีหวัง</title>
     
-    <!-- Favicon (เชื่อมลิงก์ตรงแทนการใช้ Apps Script Variable) -->
+    <!-- Favicon -->
     <link rel="icon" type="image/png" href="https://drive.google.com/uc?export=view&id=1zC_TJwmzziZAPRap48Nr4gxK9_Cjs4-e">
 
     <!-- Tailwind CSS -->
@@ -1817,7 +1817,6 @@
             return url;
         };
 
-        /* [แก้ไข] ปรับ query ให้ Join ชื่อจริงและจัดเรียงตามลำดับอย่างถูกต้อง */
         window.syncData = async function(showAlert = false) {
             const btnIcon = document.getElementById('sync-icon');
             if(btnIcon) btnIcon.classList.add('fa-spin');
@@ -1845,7 +1844,6 @@
                     'รูปภาพ': row.image_url
                 }));
 
-                /* [แก้ไข] ดึงข้อมูลองค์ประกอบที่ 1 พร้อมเรียงลำดับ ซ้อนกันเพื่อไม่ให้ข้ามหมวด */
                 const { data: e1Raw, error: err4_1 } = await supabaseClient
                     .from('eval_items')
                     .select(`*, eval_criteria(name), eval_sections(name)`)
@@ -1854,7 +1852,6 @@
                     .order('criteria_id')
                     .order('sort_order');
 
-                /* [แก้ไข] ดึงข้อมูลองค์ประกอบที่ 2 พร้อมเรียงลำดับ ซ้อนกันเพื่อไม่ให้ข้ามหมวด */
                 const { data: e2Raw, error: err4_2 } = await supabaseClient
                     .from('eval_items')
                     .select(`*, eval_criteria(name), eval_sections(name)`)
@@ -2062,7 +2059,7 @@
                 let btn = document.createElement('button');
                 btn.type = 'button';
                 
-                let label = item['หัวข้อย่อย'] || item['รายการประเมิน'] || item['หัวข้อ'] || `หัวข้อที่ ${index + 1}`;
+                let label = String(item['หัวข้อย่อย'] || item['รายการประเมิน'] || item['หัวข้อ'] || `หัวข้อที่ ${index + 1}`);
                 btn.innerText = label;
                 
                 if (label.length > 40) {
@@ -2099,49 +2096,75 @@
         };
 
         window.renderSlideDisplay = function(side) {
-            const dataArr = side === 1 ? db.evals_1 : db.evals_2;
-            const idx = currentSlide[side] || 0;
-            const data = dataArr[idx];
-            
-            const btnCont = document.getElementById(`subtopics-container-${side}`);
-            if(btnCont) {
-                const buttons = btnCont.querySelectorAll('.subtopic-btn');
-                buttons.forEach((b, bIdx) => {
-                    if (bIdx === idx) b.classList.add('active');
-                    else b.classList.remove('active');
-                });
+            try {
+                const dataArr = side === 1 ? db.evals_1 : db.evals_2;
+                const idx = currentSlide[side] || 0;
+                const data = dataArr[idx];
+                
+                const btnCont = document.getElementById(`subtopics-container-${side}`);
+                if(btnCont) {
+                    const buttons = btnCont.querySelectorAll('.subtopic-btn');
+                    buttons.forEach((b, bIdx) => {
+                        if (bIdx === idx) b.classList.add('active');
+                        else b.classList.remove('active');
+                    });
+                }
+
+                // ดักจับกรณีไม่มีข้อมูลใน DB จะเปลี่ยนและซ่อน HTML อัตโนมัติ
+                if(!data || dataArr.length === 0) {
+                    const catEl = document.getElementById(`slide${side}-category`);
+                    if(catEl) catEl.innerText = "";
+                    
+                    const titleEl = document.getElementById(`slide${side}-title`);
+                    if(titleEl) titleEl.innerText = "ยังไม่มีข้อมูลในส่วนนี้";
+                    
+                    const subtitleEl = document.getElementById(`slide${side}-subtitle`);
+                    if(subtitleEl) subtitleEl.style.display = 'none';
+                    
+                    const descEl = document.getElementById(`slide${side}-desc`);
+                    if(descEl) descEl.innerHTML = '<p class="text-slate-400 mt-2">กรุณาเพิ่มข้อมูลผ่านหน้าแอดมิน</p>';
+                    return;
+                }
+
+                const catEl = document.getElementById(`slide${side}-category`);
+                if(catEl) catEl.innerText = data['หัวข้อ'] || '';
+                
+                const titleEl = document.getElementById(`slide${side}-title`);
+                if(titleEl) titleEl.innerText = data['รายการประเมิน'] || '';
+                
+                const subtitleEl = document.getElementById(`slide${side}-subtitle`);
+                // เช็คค่าและซ่อนแท็กหากไม่มีข้อมูล โดยใช้ String() ป้องกันปัญหา Error .trim()
+                if (subtitleEl) {
+                    if (data['หัวข้อย่อย'] && String(data['หัวข้อย่อย']).trim() !== "") {
+                        subtitleEl.innerText = String(data['หัวข้อย่อย']).trim();
+                        subtitleEl.style.display = 'block';
+                    } else {
+                        subtitleEl.style.display = 'none';
+                    }
+                }
+
+                const descEl = document.getElementById(`slide${side}-desc`);
+                if(descEl) descEl.innerHTML = data['คำอธิบาย'] || '<p class="text-slate-500">ไม่มีคำอธิบายเพิ่มเติม</p>';
+                
+                const counterEl = document.getElementById(`slide${side}-counter`);
+                if(counterEl) counterEl.innerText = `${idx + 1} / ${dataArr.length}`;
+
+                const progressEl = document.getElementById(`progress-bar-${side}`);
+                if(progressEl) {
+                    const progressPercentage = ((idx + 1) / dataArr.length) * 100;
+                    progressEl.style.width = `${progressPercentage}%`;
+                }
+
+                const btnPrev = document.getElementById(`btn-prev-${side}`);
+                if(btnPrev) btnPrev.disabled = idx === 0;
+                
+                const btnNext = document.getElementById(`btn-next-${side}`);
+                if(btnNext) btnNext.disabled = idx === dataArr.length - 1;
+
+                loadPresentationFontSettings();
+            } catch (e) {
+                console.error("Render Slide Error:", e);
             }
-
-            if(!data || dataArr.length === 0) {
-                document.getElementById(`slide${side}-title`).innerText = "ยังไม่มีข้อมูลในส่วนนี้";
-                document.getElementById(`slide${side}-desc`).innerHTML = '<p class="text-slate-400">กรุณาเพิ่มข้อมูลผ่านหน้าแอดมิน</p>';
-                return;
-            }
-
-            /* [แก้ไข] ดึงข้อมูลจาก object ที่ map ไว้แล้วมาแสดงผล */
-            document.getElementById(`slide${side}-category`).innerText = data['หัวข้อ'] || '';
-            document.getElementById(`slide${side}-title`).innerText = data['รายการประเมิน'] || '';
-            
-            const subtitleEl = document.getElementById(`slide${side}-subtitle`);
-            /* [แก้ไข] เช็คค่า subtopic ก่อนแสดงผล ป้องกันบรรทัดว่างหรือคำว่า null */
-            if (data['หัวข้อย่อย'] && data['หัวข้อย่อย'].trim() !== "") {
-                subtitleEl.innerText = data['หัวข้อย่อย'];
-                subtitleEl.style.display = 'block';
-            } else {
-                subtitleEl.style.display = 'none';
-            }
-
-            /* [แก้ไข] เรนเดอร์ HTML ด้วย innerHTML ของ Vanilla JS */
-            document.getElementById(`slide${side}-desc`).innerHTML = data['คำอธิบาย'] || '<p class="text-slate-500">ไม่มีคำอธิบายเพิ่มเติม</p>';
-            document.getElementById(`slide${side}-counter`).innerText = `${idx + 1} / ${dataArr.length}`;
-
-            const progressPercentage = ((idx + 1) / dataArr.length) * 100;
-            document.getElementById(`progress-bar-${side}`).style.width = `${progressPercentage}%`;
-
-            document.getElementById(`btn-prev-${side}`).disabled = idx === 0;
-            document.getElementById(`btn-next-${side}`).disabled = idx === dataArr.length - 1;
-
-            loadPresentationFontSettings();
         };
 
         window.prevSlide = function(side) { 
@@ -2375,6 +2398,7 @@
             window.populateEditForm();
         };
 
+        /* [แก้ไข] อัปเดตช่อง "หัวข้อหลัก" และ "รายการประเมิน" ให้อ่านอย่างเดียวในฟอร์มแบบรวม */
         window.renderEvalsAllForm = function(sec) {
             const container = document.getElementById('evals-all-container');
             container.innerHTML = '';
