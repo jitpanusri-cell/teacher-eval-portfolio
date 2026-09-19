@@ -684,14 +684,13 @@
                 
                 <div class="flex flex-col xl:flex-row justify-between items-center gap-4">
         
-                    <!-- 1. ส่วนหัวข้อ (ซ้าย) + สถานะ Auto-save -->
+                    <!-- 1. ส่วนหัวข้อ (ซ้าย) -->
                     <div class="flex-shrink-0 text-center xl:text-left flex items-center">
                         <div>
                             <h2 class="text-3xl md:text-4xl font-semibold text-slate-800 leading-tight">จัดการระบบ</h2>
                             <span class="text-amber-500 font-medium tracking-widest uppercase text-[10px] md:text-xs">Admin Dashboard</span>
                         </div>
-                        <!-- ข้อความแจ้งสถานะ Auto-save -->
-                        <span id="auto-save-status" class="text-xs font-medium text-slate-500 ml-4 px-3 py-1 bg-slate-100 rounded-full opacity-0 transition-opacity duration-300 hidden md:inline-flex items-center gap-1.5 shadow-inner"></span>
+                        <!-- ลบส่วนข้อความแจ้งสถานะ Auto-save ออกตามคำขอ -->
                     </div>
                     
                     <!-- 2. ส่วนเมนู (กลาง) -->
@@ -1541,11 +1540,7 @@
                         });
                     });
 
-                    editor.on('keyup change ExecCommand', function (e) {
-                        if(typeof window.triggerAutoSave === 'function') {
-                            window.triggerAutoSave();
-                        }
-                    });
+                    // ลบ Event ดักจับการพิมพ์สำหรับ Auto-save ของ TinyMCE ออกตามคำขอ
                 }
             });
         };
@@ -2617,107 +2612,9 @@
             }
         };
 
-        // ==========================================
-        // ระบบบันทึกอัตโนมัติ (Auto-save with Debounce)
-        // ==========================================
-        let autoSaveTimeout = null;
-
-        window.triggerAutoSave = function() {
-            const statusEl = document.getElementById('auto-save-status');
-            if (statusEl) {
-                statusEl.innerHTML = '<i class="fas fa-spinner fa-spin text-brand-500"></i> กำลังบันทึก...';
-                statusEl.classList.remove('opacity-0');
-            }
-
-            if (autoSaveTimeout) clearTimeout(autoSaveTimeout);
-
-            autoSaveTimeout = setTimeout(async () => {
-                await window.performSilentSave();
-            }, 2000); 
-        };
-
-        window.performSilentSave = async function() {
-            const sec = document.getElementById('admin-section-select').value;
-            const mode = document.getElementById('admin-mode').value;
-            
-            // บันทึกเฉพาะข้อมูลขององค์ประกอบที่ 1 และ 2
-            if(sec !== 'evals_1' && sec !== 'evals_2') return;
-
-            try {
-                if(mode === 'edit_all') {
-                    let items = document.querySelectorAll('.eval-all-item');
-                    for (let card of items) {
-                        let id = card.getAttribute('data-id');
-                        let descEditorId = `eval_all_${id}_desc`;
-                        let editor = tinymce.get(descEditorId);
-                        let editorContent = editor ? editor.getContent() : card.querySelector('.eval-desc').innerHTML;
-                        
-                        let dataToSave = {
-                            subtopic: card.querySelector('.eval-subtitle').value,
-                            description: editorContent
-                        };
-                        await supabaseClient.from('eval_items').update(dataToSave).eq('item_uid', id);
-                    }
-                } else {
-                    let id = document.getElementById('edit-item-id').value;
-                    if(!id) return; 
-                    
-                    let editorContent = tinymce.get('ev-f-desc') ? tinymce.get('ev-f-desc').getContent() : document.getElementById('ev-f-desc').innerHTML;
-                    let saveObj = { 
-                        subtopic: document.getElementById('ev-f-subtitle').value, 
-                        description: editorContent
-                    };
-                    await supabaseClient.from('eval_items').update(saveObj).eq('item_uid', id);
-                }
-
-                const statusEl = document.getElementById('auto-save-status');
-                if (statusEl) {
-                    statusEl.innerHTML = '<i class="fas fa-check-circle text-brand-500"></i> บันทึกอัตโนมัติแล้ว';
-                    setTimeout(() => statusEl.classList.add('opacity-0'), 3000); 
-                }
-                
-                await window.syncDataBackground();
-                
-            } catch(e) {
-                const statusEl = document.getElementById('auto-save-status');
-                if (statusEl) statusEl.innerHTML = '<i class="fas fa-exclamation-circle text-rose-500"></i> ขัดข้อง';
-            }
-        };
-
-        window.syncDataBackground = async function() {
-            try {
-                const [
-                    { data: e1Raw, error: err1 },
-                    { data: e2Raw, error: err2 }
-                ] = await Promise.all([
-                    supabaseClient.from('eval_items').select(`*, eval_criteria(name), eval_sections(name)`).in('section_id', [1, 2]).order('section_id').order('criteria_id').order('sort_order'),
-                    supabaseClient.from('eval_items').select(`*, eval_criteria(name), eval_sections(name)`).eq('section_id', 3).order('criteria_id').order('sort_order')
-                ]);
-
-                if(err1 || err2) throw new Error("Bg Sync Database Error");
-                
-                let e1 = [], e2 = [];
-                if (e1Raw) e1Raw.forEach(row => e1.push({'ID': row.item_uid, 'หัวข้อ': row.eval_sections?.name||'', 'รายการประเมิน': row.eval_criteria?.name||'', 'หัวข้อย่อย': row.subtopic||null, 'คำอธิบาย': row.description||''}));
-                if (e2Raw) e2Raw.forEach(row => e2.push({'ID': row.item_uid, 'หัวข้อ': row.eval_sections?.name||'', 'รายการประเมิน': row.eval_criteria?.name||'', 'หัวข้อย่อย': row.subtopic||null, 'คำอธิบาย': row.description||''}));
-                
-                db.evals_1 = e1;
-                db.evals_2 = e2;
-                localStorage.setItem('krutest_fast_db', JSON.stringify(db));
-            } catch(err) {
-                console.error("🔴 Bg Sync Failed:", err);
-            }
-        };
-
-        document.addEventListener("DOMContentLoaded", () => {
-            const mainContent = document.getElementById('admin-main-content');
-            if(mainContent) {
-                mainContent.addEventListener('input', function(e) {
-                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-                        window.triggerAutoSave();
-                    }
-                });
-            }
-        });
+        // ลบส่วนระบบบันทึกอัตโนมัติ (Auto-save) และ syncDataBackground ออกตามคำขอ
+        // ลบ Event Listener ดักจับ input ใน admin-main-content สำหรับ Auto-save ออกตามคำขอ
+        
     </script>
 </body>
 </html>
