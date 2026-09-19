@@ -1054,6 +1054,9 @@
 
             loadPresentationFontSettings();
             goToPage(targetPage, true);
+            
+            // โหลดข้อมูลออโต้เพียง 1 ครั้งตอนเปิดเว็บแรกสุดเท่านั้น ลดการสแปมเซิร์ฟเวอร์
+            window.syncData(false);
         });
 
         // จัดการล็อกอินผู้ดูแลระบบผ่าน Supabase Auth
@@ -1116,10 +1119,6 @@
             }
         }
 
-        window.onload = () => { 
-            syncData(false);
-        };
-
         window.toggleNavbarMenu = function() {
             const nav = document.getElementById('navbar');
             nav.classList.toggle('expanded');
@@ -1129,8 +1128,8 @@
             pageNumber = parseInt(pageNumber) || 1;
             sessionStorage.setItem('krutest_page', pageNumber);
 
-            window.syncData(false);
-
+            // เอา syncData ออกจากส่วนนี้แล้ว เพื่อไม่ให้เว็บดึงข้อมูลซ้ำซ้อนทุกครั้งที่กดเปลี่ยนหน้า
+            
             document.querySelectorAll('.page-section').forEach(el => {
                 el.style.display = 'none';
                 el.classList.remove('active');
@@ -1844,7 +1843,7 @@
             if(btnIcon) btnIcon.classList.add('fa-spin');
             
             try {
-                // 1. โหลดข้อมูลทุกตาราง "พร้อมกัน" ด้วย Promise.all (ลดเวลาโหลด 5 เท่า)
+                // โหลดข้อมูลทุกตารางพร้อมกันด้วย Promise.all (รวดเร็วขึ้น)
                 const [
                     { data: setRaw, error: err1 },
                     { data: wlRaw, error: err2 },
@@ -1859,16 +1858,14 @@
                     supabaseClient.from('eval_items').select(`*, eval_criteria(name), eval_sections(name)`).eq('section_id', 3).order('criteria_id').order('sort_order')
                 ]);
 
-                // 2. ดักจับและพ่น Error ออกมาให้เห็นชัดเจนว่าตารางไหนมีปัญหา
-                if (err1) console.error("❌ Error Settings:", err1);
-                if (err2) console.error("❌ Error Workload:", err2);
-                if (err3) console.error("❌ Error Portfolio:", err3);
-                if (err4_1) console.error("❌ Error Evals (1):", err4_1);
-                if (err4_2) console.error("❌ Error Evals (2):", err4_2);
+                if (err1) console.error("Error Settings:", err1);
+                if (err2) console.error("Error Workload:", err2);
+                if (err3) console.error("Error Portfolio:", err3);
+                if (err4_1) console.error("Error Evals (1):", err4_1);
+                if (err4_2) console.error("Error Evals (2):", err4_2);
 
-                if(err1 || err2 || err3 || err4_1 || err4_2) throw new Error("มีตารางใดตารางหนึ่งดึงข้อมูลไม่สำเร็จ (เช็ค Console)");
+                if(err1 || err2 || err3 || err4_1 || err4_2) throw new Error("Database Fetch Error");
 
-                // 3. นำข้อมูลมาประกอบร่าง
                 let mapSettings = {};
                 if(setRaw) setRaw.forEach(row => { mapSettings[row.key] = row.value; });
 
@@ -1892,7 +1889,7 @@
                 if (e1Raw) {
                     e1Raw.forEach(row => {
                         e1.push({
-                            'ID': row.item_uid, // ใช้ item_uid ตามฐานข้อมูล
+                            'ID': row.item_uid,
                             'หัวข้อ': row.eval_sections ? row.eval_sections.name : '',
                             'รายการประเมิน': row.eval_criteria ? row.eval_criteria.name : '',
                             'หัวข้อย่อย': row.subtopic || null, 
@@ -1904,7 +1901,7 @@
                 if (e2Raw) {
                     e2Raw.forEach(row => {
                         e2.push({
-                            'ID': row.item_uid, // ใช้ item_uid ตามฐานข้อมูล
+                            'ID': row.item_uid,
                             'หัวข้อ': row.eval_sections ? row.eval_sections.name : '',
                             'รายการประเมิน': row.eval_criteria ? row.eval_criteria.name : '',
                             'หัวข้อย่อย': row.subtopic || null, 
@@ -1913,7 +1910,6 @@
                     });
                 }
 
-                // 4. บันทึกลงตัวแปรและวาดหน้าเว็บใหม่
                 db.settings = mapSettings;
                 db.workload = mapWorkload;
                 db.portfolio = mapPortfolio;
@@ -1927,13 +1923,13 @@
                     window.changeAdminSection();
                     window.loadItemsForEdit();
                 }
+                
                 if(showAlert) window.showToast("ซิงค์ข้อมูล Real-time สำเร็จ!");
 
             } catch(err) {
-                console.error("🔴 Sync Failed:", err);
+                console.error("Sync Failed:", err);
                 if(showAlert) window.showToast("เกิดข้อผิดพลาดในการดึงข้อมูล", "error");
             } finally {
-                // หยุดหมุนไอคอนทุกกรณี
                 if(btnIcon) btnIcon.classList.remove('fa-spin');
             }
         };
