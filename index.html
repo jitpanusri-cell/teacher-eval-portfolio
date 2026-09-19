@@ -156,7 +156,7 @@
             transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             width: 58px; height: 58px; overflow: hidden; white-space: nowrap;
             background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 0.15);
+            -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 9999px; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
         }
         #navbar.expanded { 
@@ -679,7 +679,7 @@
         <!-- Page 8: Admin Dashboard -->
         <div id="page-8" class="page-section w-full max-w-[98%] mx-auto mb-12">
             
-            <!-- [อัปเดต] กล่อง admin-sticky-header ที่ใช้ตรึงเมนูและแถบเครื่องมือ -->
+            <!-- กล่อง admin-sticky-header ที่ใช้ตรึงเมนูและแถบเครื่องมือ -->
             <div id="admin-sticky-header" class="sticky top-0 z-[100] bg-white/95 backdrop-blur-xl border-b border-slate-200 shadow-sm pt-6 pb-3 px-4 md:px-8 mb-6 rounded-b-3xl">
                 
                 <div class="flex flex-col xl:flex-row justify-between items-center gap-4">
@@ -694,7 +694,7 @@
                         <span id="auto-save-status" class="text-xs font-medium text-slate-500 ml-4 px-3 py-1 bg-slate-100 rounded-full opacity-0 transition-opacity duration-300 hidden md:inline-flex items-center gap-1.5 shadow-inner"></span>
                     </div>
                     
-                    <!-- [อัปเดต] 2. ส่วนเมนู (กลาง) - ย่อข้อความแล้ว -->
+                    <!-- 2. ส่วนเมนู (กลาง) - ย่อข้อความแล้ว -->
                     <div class="flex flex-1 overflow-x-auto gap-2 hide-scrollbar w-full xl:justify-center" id="admin-horizontal-menu">
                         <button type="button" onclick="selectAdminTab('profile')" id="sidebar-tab-profile" class="admin-sidebar-btn flex-shrink-0 px-4 py-2 rounded-xl text-xs md:text-sm font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 flex items-center transition-all shadow-sm active-tab">
                             <i class="fas fa-user-circle mr-1.5"></i> ข้อมูลส่วนตัว
@@ -713,7 +713,7 @@
                         </button>
                     </div>
 
-                    <!-- [อัปเดต] 3. ส่วนปุ่มจัดการ (ขวา) - เปลี่ยนเป็นไอคอนแล้ว -->
+                    <!-- 3. ส่วนปุ่มจัดการ (ขวา) - เปลี่ยนเป็นไอคอนแล้ว -->
                     <div class="flex flex-wrap items-center justify-center gap-2 bg-slate-50 p-1.5 md:p-2 rounded-2xl shadow-inner border border-slate-200 flex-shrink-0">
                         <button onclick="syncData(true)" class="flex items-center justify-center w-9 h-9 bg-slate-800 text-white rounded-xl hover:bg-slate-700 transition-colors shadow-sm" title="ซิงค์ข้อมูล">
                             <i class="fas fa-sync-alt" id="sync-icon"></i>
@@ -1125,7 +1125,6 @@
             nav.classList.toggle('expanded');
         };
 
-        // [อัปเดต] ให้ระบบจำหน้าล่าสุดและแท็บแอดมินล่าสุดได้เวลากดรีโหลด
         window.goToPage = function(pageNumber, isInitial = false) {
             pageNumber = parseInt(pageNumber) || 1;
             sessionStorage.setItem('krutest_page', pageNumber);
@@ -1161,7 +1160,6 @@
                 nav.classList.add('hidden'); nav.classList.remove('flex'); 
             }
             
-            // --- จุดที่เพิ่มการจำแท็บแอดมิน ---
             if(pageNumber === 8) {
                 let savedAdminTab = sessionStorage.getItem('krutest_admin_tab') || 'profile';
                 window.selectAdminTab(savedAdminTab);
@@ -1270,7 +1268,6 @@
             }
         };
 
-        // [อัปเดต] แก้ไข subtitleSize เป็น subSize แล้ว
         function loadPresentationFontSettings() {
             let fFam = db.settings.PresFontFamily || "'Kanit', sans-serif";
             let tSize = db.settings.PresTitleSize || "26px";
@@ -1545,7 +1542,7 @@
                         });
                     });
 
-                    // [อัปเดต] ดักจับการพิมพ์ให้ระบบ Auto-save ทำงาน
+                    // ดักจับการพิมพ์ให้ระบบ Auto-save ทำงาน
                     editor.on('keyup change ExecCommand', function (e) {
                         if(typeof window.triggerAutoSave === 'function') {
                             window.triggerAutoSave();
@@ -1889,7 +1886,7 @@
                 if (e1Raw) {
                     e1Raw.forEach(row => {
                         e1.push({
-                            'ID': row.item_uid,
+                            'ID': row.item_uid, // ใช้ item_uid ตาม Schema
                             'หัวข้อ': row.eval_sections ? row.eval_sections.name : '',
                             'รายการประเมิน': row.eval_criteria ? row.eval_criteria.name : '',
                             'หัวข้อย่อย': row.subtopic || null, 
@@ -1901,7 +1898,7 @@
                 if (e2Raw) {
                     e2Raw.forEach(row => {
                         e2.push({
-                            'ID': row.item_uid,
+                            'ID': row.item_uid, // ใช้ item_uid ตาม Schema
                             'หัวข้อ': row.eval_sections ? row.eval_sections.name : '',
                             'รายการประเมิน': row.eval_criteria ? row.eval_criteria.name : '',
                             'หัวข้อย่อย': row.subtopic || null, 
@@ -2136,7 +2133,6 @@
                     });
                 }
 
-                // ดักจับกรณีไม่มีข้อมูลใน DB จะเปลี่ยนและซ่อน HTML อัตโนมัติ
                 if(!data || dataArr.length === 0) {
                     const catEl = document.getElementById(`slide${side}-category`);
                     if(catEl) catEl.innerText = "";
@@ -2159,7 +2155,6 @@
                 if(titleEl) titleEl.innerText = data['รายการประเมิน'] || '';
                 
                 const subtitleEl = document.getElementById(`slide${side}-subtitle`);
-                // เช็คค่าและซ่อนแท็กหากไม่มีข้อมูล โดยใช้ String() ป้องกันปัญหา Error .trim()
                 if (subtitleEl) {
                     if (data['หัวข้อย่อย'] && String(data['หัวข้อย่อย']).trim() !== "") {
                         subtitleEl.innerText = String(data['หัวข้อย่อย']).trim();
@@ -2207,7 +2202,6 @@
             } 
         };
 
-        // [อัปเดต] ให้ระบบจำแท็บในหน้าแอดมินได้
         window.selectAdminTab = function(sectionVal) {
             document.getElementById('admin-section-select').value = sectionVal;
             sessionStorage.setItem('krutest_admin_tab', sectionVal);
@@ -2488,7 +2482,6 @@
             }
         };
 
-        // [อัปเดต] เซฟเฉพาะคอลัมน์ที่จำเป็น (ตัด source ออก)
         window.saveSingleEval = async function(id) {
             const sec = document.getElementById('admin-section-select').value;
             let card = document.querySelector(`.eval-all-item[data-id="${id}"]`);
@@ -2514,7 +2507,6 @@
             }
         };
 
-        // [อัปเดต] เซฟเฉพาะคอลัมน์ที่จำเป็น (ตัด source ออก)
         window.saveAllEvals = async function() {
             const sec = document.getElementById('admin-section-select').value;
             let items = document.querySelectorAll('.eval-all-item');
@@ -2625,7 +2617,7 @@
             }
         };
 
-        // [อัปเดต] ==========================================
+        // ==========================================
         // ระบบบันทึกอัตโนมัติ (Auto-save with Debounce)
         // ==========================================
         let autoSaveTimeout = null;
