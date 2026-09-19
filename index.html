@@ -1253,25 +1253,25 @@
         };
 
         function loadPresentationFontSettings() {
-            let fFam = db.settings.PresFontFamily || "'Kanit', sans-serif";
-            let tSize = db.settings.PresTitleSize || "26px";
-            let subSize = db.settings.PresSubtitleSize || "22px";
-            let fWeight = db.settings.PresFontWeight || "700";
+    let fFam = db.settings.PresFontFamily || "'Kanit', sans-serif";
+    let tSize = db.settings.PresTitleSize || "26px";
+    let subSize = db.settings.PresSubtitleSize || "22px"; // ประกาศตัวแปรชื่อ subSize ไว้
+    let fWeight = db.settings.PresFontWeight || "700";
 
-            if(document.getElementById('admin-font-family')) document.getElementById('admin-font-family').value = fFam;
-            if(document.getElementById('admin-title-size')) document.getElementById('admin-title-size').value = tSize;
-            if(document.getElementById('admin-subtitle-size')) document.getElementById('admin-subtitle-size').value = subSize;
-            if(document.getElementById('admin-font-weight')) document.getElementById('admin-font-weight').value = fWeight;
+    if(document.getElementById('admin-font-family')) document.getElementById('admin-font-family').value = fFam;
+    if(document.getElementById('admin-title-size')) document.getElementById('admin-title-size').value = tSize;
+    if(document.getElementById('admin-subtitle-size')) document.getElementById('admin-subtitle-size').value = subSize;
+    if(document.getElementById('admin-font-weight')) document.getElementById('admin-font-weight').value = fWeight;
 
-            document.querySelectorAll('#page-5, #page-6').forEach(section => {
-                section.style.fontFamily = fFam;
-                section.querySelectorAll('.dynamic-presentation-title').forEach((el, index) => {
-                    if (index === 0 || index === 1) { el.style.fontSize = tSize; } 
-                    else { el.style.fontSize = subtitleSize; }
-                    el.style.fontWeight = fWeight;
-                });
-            });
-        }
+    document.querySelectorAll('#page-5, #page-6').forEach(section => {
+        section.style.fontFamily = fFam;
+        section.querySelectorAll('.dynamic-presentation-title').forEach((el, index) => {
+            if (index === 0 || index === 1) { el.style.fontSize = tSize; }
+            else { el.style.fontSize = subSize; } // <--- แก้ไขจุดนี้ (เดิมเป็น subtitleSize ทำให้เกิด Error)
+            el.style.fontWeight = fWeight;
+        });
+    });
+}
 
         window.saveWorkloadSettings = async function() {
             const term = document.getElementById('wl-setting-term').value;
