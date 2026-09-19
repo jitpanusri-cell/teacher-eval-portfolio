@@ -694,7 +694,7 @@
                         <span id="auto-save-status" class="text-xs font-medium text-slate-500 ml-4 px-3 py-1 bg-slate-100 rounded-full opacity-0 transition-opacity duration-300 hidden md:inline-flex items-center gap-1.5 shadow-inner"></span>
                     </div>
                     
-                    <!-- 2. ส่วนเมนู (กลาง) - ย่อข้อความแล้ว -->
+                    <!-- 2. ส่วนเมนู (กลาง) -->
                     <div class="flex flex-1 overflow-x-auto gap-2 hide-scrollbar w-full xl:justify-center" id="admin-horizontal-menu">
                         <button type="button" onclick="selectAdminTab('profile')" id="sidebar-tab-profile" class="admin-sidebar-btn flex-shrink-0 px-4 py-2 rounded-xl text-xs md:text-sm font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 flex items-center transition-all shadow-sm active-tab">
                             <i class="fas fa-user-circle mr-1.5"></i> ข้อมูลส่วนตัว
@@ -713,7 +713,7 @@
                         </button>
                     </div>
 
-                    <!-- 3. ส่วนปุ่มจัดการ (ขวา) - เปลี่ยนเป็นไอคอนแล้ว -->
+                    <!-- 3. ส่วนปุ่มจัดการ (ขวา) -->
                     <div class="flex flex-wrap items-center justify-center gap-2 bg-slate-50 p-1.5 md:p-2 rounded-2xl shadow-inner border border-slate-200 flex-shrink-0">
                         <button onclick="syncData(true)" class="flex items-center justify-center w-9 h-9 bg-slate-800 text-white rounded-xl hover:bg-slate-700 transition-colors shadow-sm" title="ซิงค์ข้อมูล">
                             <i class="fas fa-sync-alt" id="sync-icon"></i>
@@ -734,12 +734,12 @@
                             </button>
                         </div>
                     </div>
-                </div> <!-- ปิด flex-col xl:flex-row -->
+                </div>
                 
                 <!-- แถบ Toolbar ของ TinyMCE จะมาโผล่ตรงนี้ และจะถูกล็อกติดขอบจอด้านบน -->
                 <div id="global-toolbar-container" class="w-full min-h-[42px] mt-3 pt-2 border-t border-slate-100 hidden transition-all duration-300"></div>
                 
-            </div> <!-- ปิด admin-sticky-header -->
+            </div>
 
             <!-- ส่วนแก้ไขข้อมูลหลัก -->
             <div class="px-4 md:px-8 w-full transition-all duration-300 relative" id="admin-main-content" data-aos="fade-up" data-aos-delay="100">
@@ -1542,7 +1542,6 @@
                         });
                     });
 
-                    // ดักจับการพิมพ์ให้ระบบ Auto-save ทำงาน
                     editor.on('keyup change ExecCommand', function (e) {
                         if(typeof window.triggerAutoSave === 'function') {
                             window.triggerAutoSave();
@@ -1845,11 +1844,32 @@
             if(btnIcon) btnIcon.classList.add('fa-spin');
             
             try {
-                const { data: setRaw, error: err1 } = await supabaseClient.from('settings').select('*');
+                // โหลดข้อมูลทุกตารางพร้อมกันด้วย Promise.all (รวดเร็วขึ้น)
+                const [
+                    { data: setRaw, error: err1 },
+                    { data: wlRaw, error: err2 },
+                    { data: pfRaw, error: err3 },
+                    { data: e1Raw, error: err4_1 },
+                    { data: e2Raw, error: err4_2 }
+                ] = await Promise.all([
+                    supabaseClient.from('settings').select('*'),
+                    supabaseClient.from('workload').select('*').order('updated_at', { ascending: true }),
+                    supabaseClient.from('portfolio').select('*').order('id', { ascending: true }),
+                    supabaseClient.from('eval_items').select(`*, eval_criteria(name), eval_sections(name)`).in('section_id', [1, 2]).order('section_id').order('criteria_id').order('sort_order'),
+                    supabaseClient.from('eval_items').select(`*, eval_criteria(name), eval_sections(name)`).eq('section_id', 3).order('criteria_id').order('sort_order')
+                ]);
+
+                if (err1) console.error("Error Settings:", err1);
+                if (err2) console.error("Error Workload:", err2);
+                if (err3) console.error("Error Portfolio:", err3);
+                if (err4_1) console.error("Error Evals (1):", err4_1);
+                if (err4_2) console.error("Error Evals (2):", err4_2);
+
+                if(err1 || err2 || err3 || err4_1 || err4_2) throw new Error("Database Fetch Error");
+
                 let mapSettings = {};
                 if(setRaw) setRaw.forEach(row => { mapSettings[row.key] = row.value; });
 
-                const { data: wlRaw, error: err2 } = await supabaseClient.from('workload').select('*').order('updated_at', { ascending: true });
                 let mapWorkload = (wlRaw || []).map(row => ({
                     'ID': row.id,
                     'หมวดหมู่': row.category,
@@ -1858,7 +1878,6 @@
                     'จำนวนชั่วโมง': row.hours
                 }));
 
-                const { data: pfRaw, error: err3 } = await supabaseClient.from('portfolio').select('*').order('id', { ascending: true });
                 let mapPortfolio = (pfRaw || []).map(row => ({
                     'ID': row.id,
                     'หมวดหมู่': row.category,
@@ -1867,26 +1886,11 @@
                     'รูปภาพ': row.image_url
                 }));
 
-                const { data: e1Raw, error: err4_1 } = await supabaseClient
-                    .from('eval_items')
-                    .select(`*, eval_criteria(name), eval_sections(name)`)
-                    .in('section_id', [1, 2])
-                    .order('section_id')
-                    .order('criteria_id')
-                    .order('sort_order');
-
-                const { data: e2Raw, error: err4_2 } = await supabaseClient
-                    .from('eval_items')
-                    .select(`*, eval_criteria(name), eval_sections(name)`)
-                    .eq('section_id', 3)
-                    .order('criteria_id')
-                    .order('sort_order');
-
                 let e1 = [], e2 = [];
                 if (e1Raw) {
                     e1Raw.forEach(row => {
                         e1.push({
-                            'ID': row.item_uid, // ใช้ item_uid ตาม Schema
+                            'ID': row.item_uid,
                             'หัวข้อ': row.eval_sections ? row.eval_sections.name : '',
                             'รายการประเมิน': row.eval_criteria ? row.eval_criteria.name : '',
                             'หัวข้อย่อย': row.subtopic || null, 
@@ -1898,7 +1902,7 @@
                 if (e2Raw) {
                     e2Raw.forEach(row => {
                         e2.push({
-                            'ID': row.item_uid, // ใช้ item_uid ตาม Schema
+                            'ID': row.item_uid,
                             'หัวข้อ': row.eval_sections ? row.eval_sections.name : '',
                             'รายการประเมิน': row.eval_criteria ? row.eval_criteria.name : '',
                             'หัวข้อย่อย': row.subtopic || null, 
@@ -1906,8 +1910,6 @@
                         });
                     });
                 }
-
-                if(err1 || err2 || err3 || err4_1 || err4_2) throw new Error("Database Fetch Error");
 
                 db.settings = mapSettings;
                 db.workload = mapWorkload;
@@ -1918,13 +1920,15 @@
                 localStorage.setItem('krutest_fast_db', JSON.stringify(db));
                 window.renderAllPages(); 
 
-                if(document.getElementById('page-8').classList.contains('active')) {
+                if(document.getElementById('page-8') && document.getElementById('page-8').classList.contains('active')) {
                     window.changeAdminSection();
+                    window.loadItemsForEdit();
                 }
-                window.loadItemsForEdit();
+                
                 if(showAlert) window.showToast("ซิงค์ข้อมูล Real-time สำเร็จ!");
 
             } catch(err) {
+                console.error("Sync Failed:", err);
                 if(showAlert) window.showToast("เกิดข้อผิดพลาดในการดึงข้อมูล", "error");
             } finally {
                 if(btnIcon) btnIcon.classList.remove('fa-spin');
@@ -2640,7 +2644,6 @@
             const sec = document.getElementById('admin-section-select').value;
             const mode = document.getElementById('admin-mode').value;
             
-            // บันทึกเฉพาะข้อมูลขององค์ประกอบที่ 1 และ 2
             if(sec !== 'evals_1' && sec !== 'evals_2') return;
 
             try {
@@ -2687,16 +2690,27 @@
         };
 
         window.syncDataBackground = async function() {
-            const { data: e1Raw } = await supabaseClient.from('eval_items').select(`*, eval_criteria(name), eval_sections(name)`).in('section_id', [1, 2]).order('section_id').order('criteria_id').order('sort_order');
-            const { data: e2Raw } = await supabaseClient.from('eval_items').select(`*, eval_criteria(name), eval_sections(name)`).eq('section_id', 3).order('criteria_id').order('sort_order');
-            
-            let e1 = [], e2 = [];
-            if (e1Raw) e1Raw.forEach(row => e1.push({'ID': row.item_uid, 'หัวข้อ': row.eval_sections?.name||'', 'รายการประเมิน': row.eval_criteria?.name||'', 'หัวข้อย่อย': row.subtopic||null, 'คำอธิบาย': row.description||''}));
-            if (e2Raw) e2Raw.forEach(row => e2.push({'ID': row.item_uid, 'หัวข้อ': row.eval_sections?.name||'', 'รายการประเมิน': row.eval_criteria?.name||'', 'หัวข้อย่อย': row.subtopic||null, 'คำอธิบาย': row.description||''}));
-            
-            db.evals_1 = e1;
-            db.evals_2 = e2;
-            localStorage.setItem('krutest_fast_db', JSON.stringify(db));
+            try {
+                const [
+                    { data: e1Raw, error: err1 },
+                    { data: e2Raw, error: err2 }
+                ] = await Promise.all([
+                    supabaseClient.from('eval_items').select(`*, eval_criteria(name), eval_sections(name)`).in('section_id', [1, 2]).order('section_id').order('criteria_id').order('sort_order'),
+                    supabaseClient.from('eval_items').select(`*, eval_criteria(name), eval_sections(name)`).eq('section_id', 3).order('criteria_id').order('sort_order')
+                ]);
+
+                if(err1 || err2) throw new Error("Bg Sync Database Error");
+                
+                let e1 = [], e2 = [];
+                if (e1Raw) e1Raw.forEach(row => e1.push({'ID': row.item_uid, 'หัวข้อ': row.eval_sections?.name||'', 'รายการประเมิน': row.eval_criteria?.name||'', 'หัวข้อย่อย': row.subtopic||null, 'คำอธิบาย': row.description||''}));
+                if (e2Raw) e2Raw.forEach(row => e2.push({'ID': row.item_uid, 'หัวข้อ': row.eval_sections?.name||'', 'รายการประเมิน': row.eval_criteria?.name||'', 'หัวข้อย่อย': row.subtopic||null, 'คำอธิบาย': row.description||''}));
+                
+                db.evals_1 = e1;
+                db.evals_2 = e2;
+                localStorage.setItem('krutest_fast_db', JSON.stringify(db));
+            } catch(err) {
+                console.error("🔴 Bg Sync Failed:", err);
+            }
         };
 
         document.addEventListener("DOMContentLoaded", () => {
