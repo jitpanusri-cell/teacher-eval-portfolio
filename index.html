@@ -1043,7 +1043,7 @@
             _open() {
                 if (this._dbPromise) return this._dbPromise;
                 this._dbPromise = new Promise((resolve, reject) => {
-                    const req = indexedDB.open('krutest_cache_db', 1);
+                    const req = indexedDB.open('krutest_cache_db_v2', 1);
                     req.onupgradeneeded = () => { req.result.createObjectStore('kv'); };
                     req.onsuccess = () => resolve(req.result);
                     req.onerror = () => reject(req.error);
