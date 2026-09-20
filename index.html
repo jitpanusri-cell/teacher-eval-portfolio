@@ -1035,6 +1035,17 @@
         let db = { evals_1: [], evals_2: [], workload: [], portfolio: [], settings: {} };
         let currentSlide = { 1: 0, 2: 0 }; 
 
+        // เก็บ cache ลง localStorage แบบปลอดภัย: ถ้าข้อมูลใหญ่เกินโควต้าของเบราว์เซอร์ (เช่น
+        // คำอธิบายรายการประเมินที่มีรูปภาพฝังอยู่เยอะ) จะแค่ข้ามการ cache ไป ไม่ทำให้โค้ดส่วนอื่น
+        // (โดยเฉพาะ renderAllPages ที่ใช้แสดงผลข้อมูลจริงบนหน้าเว็บ) หยุดทำงานตามไปด้วย
+        window.safeCacheDB = function(dbToCache) {
+            try {
+                localStorage.setItem('krutest_fast_db', JSON.stringify(dbToCache));
+            } catch (e) {
+                console.warn('ข้ามการ cache ข้อมูล (ข้อมูลใหญ่เกินโควต้า localStorage):', e);
+            }
+        };
+
         document.addEventListener("DOMContentLoaded", () => {
             try { if (typeof AOS !== 'undefined') AOS.init({ once: true, offset: 50 }); } catch(e){}
             
@@ -1207,7 +1218,7 @@
                 if(!error) {
                     window.showToast("บันทึกรอบการประเมินสำเร็จ!");
                     db.settings.EvalRound = roundVal;
-                    localStorage.setItem('krutest_fast_db', JSON.stringify(db));
+                    window.safeCacheDB(db);
                     window.renderAllPages();
                 } else throw error;
             } catch(e) {
@@ -1260,7 +1271,7 @@
                     db.settings.PresTitleSize = titleSize;
                     db.settings.PresSubtitleSize = subtitleSize;
                     db.settings.PresFontWeight = fontWeight;
-                    localStorage.setItem('krutest_fast_db', JSON.stringify(db));
+                    window.safeCacheDB(db);
                 } else throw error;
             } catch(e) {
                 window.showToast("เกิดข้อผิดพลาดในการบันทึก", "error");
@@ -1306,7 +1317,7 @@
                     window.showToast("บันทึกหัวข้อภาคเรียนสำเร็จ!");
                     db.settings.WorkloadTerm = term;
                     db.settings.WorkloadSummary = summary;
-                    localStorage.setItem('krutest_fast_db', JSON.stringify(db));
+                    window.safeCacheDB(db);
                     window.renderAllPages();
                 } else throw error;
             } catch(e) {
@@ -1915,7 +1926,7 @@
                 db.evals_1 = e1;
                 db.evals_2 = e2;
                 
-                localStorage.setItem('krutest_fast_db', JSON.stringify(db));
+                window.safeCacheDB(db);
                 window.renderAllPages(); 
 
                 if(document.getElementById('page-8') && document.getElementById('page-8').classList.contains('active')) {
