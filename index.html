@@ -1851,30 +1851,22 @@
         window.syncData = async function(showAlert = false) {
             const btnIcon = document.getElementById('sync-icon');
             if(btnIcon) btnIcon.classList.add('fa-spin');
-            
-            try {
-                // โหลดข้อมูลทุกตารางพร้อมกันด้วย Promise.all (รวดเร็วขึ้น)
-                const [
-                    { data: setRaw, error: err1 },
-                    { data: wlRaw, error: err2 },
-                    { data: pfRaw, error: err3 },
-                    { data: e1Raw, error: err4_1 },
-                    { data: e2Raw, error: err4_2 }
-                ] = await Promise.all([
-                    supabaseClient.from('settings').select('*'),
-                    supabaseClient.from('workload').select('*').order('id', { ascending: true }),
-                    supabaseClient.from('portfolio').select('*').order('id', { ascending: true }),
-                    supabaseClient.from('eval_items').select(`*, eval_criteria(name), eval_sections(name)`).in('section_id', [1, 2]).order('section_id').order('criteria_id').order('sort_order'),
-                    supabaseClient.from('eval_items').select(`*, eval_criteria(name), eval_sections(name)`).eq('section_id', 3).order('criteria_id').order('sort_order')
-                ]);
 
+            // แบ่งการดึงข้อมูลเป็น 2 กลุ่ม แล้วเรนเดอร์ทันทีที่แต่ละกลุ่มพร้อม
+            // (แทนที่จะรอให้ครบทุกตารางก่อนถึงจะแสดงอะไรเลย) เพื่อให้หน้าแรก/โปรไฟล์/
+            // ภาระงาน/ผลงาน โผล่ขึ้นมาได้เร็ว ในขณะที่เนื้อหาการประเมิน (ซึ่งมี HTML+รูปภาพ
+            // เยอะกว่ามาก) ยังโหลดต่อในพื้นหลัง ไม่บล็อกการแสดงผลส่วนอื่น
+            let lightOk = false, evalOk = false;
+
+            const lightTask = Promise.all([
+                supabaseClient.from('settings').select('*'),
+                supabaseClient.from('workload').select('*').order('id', { ascending: true }),
+                supabaseClient.from('portfolio').select('*').order('id', { ascending: true })
+            ]).then(([{ data: setRaw, error: err1 }, { data: wlRaw, error: err2 }, { data: pfRaw, error: err3 }]) => {
                 if (err1) console.error("Error Settings:", err1);
                 if (err2) console.error("Error Workload:", err2);
                 if (err3) console.error("Error Portfolio:", err3);
-                if (err4_1) console.error("Error Evals (1):", err4_1);
-                if (err4_2) console.error("Error Evals (2):", err4_2);
-
-                if(err1 || err2 || err3 || err4_1 || err4_2) throw new Error("Database Fetch Error");
+                if (err1 || err2 || err3) throw new Error("Database Fetch Error (settings/workload/portfolio)");
 
                 let mapSettings = {};
                 if(setRaw) setRaw.forEach(row => { mapSettings[row.key] = row.value; });
@@ -1895,6 +1887,21 @@
                     'รูปภาพ': row.image_url
                 }));
 
+                db.settings = mapSettings;
+                db.workload = mapWorkload;
+                db.portfolio = mapPortfolio;
+                lightOk = true;
+                window.renderAllPages();
+            });
+
+            const evalTask = Promise.all([
+                supabaseClient.from('eval_items').select(`*, eval_criteria(name), eval_sections(name)`).in('section_id', [1, 2]).order('section_id').order('criteria_id').order('sort_order'),
+                supabaseClient.from('eval_items').select(`*, eval_criteria(name), eval_sections(name)`).eq('section_id', 3).order('criteria_id').order('sort_order')
+            ]).then(([{ data: e1Raw, error: err4_1 }, { data: e2Raw, error: err4_2 }]) => {
+                if (err4_1) console.error("Error Evals (1):", err4_1);
+                if (err4_2) console.error("Error Evals (2):", err4_2);
+                if (err4_1 || err4_2) throw new Error("Database Fetch Error (evals)");
+
                 let e1 = [], e2 = [];
                 if (e1Raw) {
                     e1Raw.forEach(row => {
@@ -1907,7 +1914,7 @@
                         });
                     });
                 }
-                
+
                 if (e2Raw) {
                     e2Raw.forEach(row => {
                         e2.push({
@@ -1920,29 +1927,33 @@
                     });
                 }
 
-                db.settings = mapSettings;
-                db.workload = mapWorkload;
-                db.portfolio = mapPortfolio;
                 db.evals_1 = e1;
                 db.evals_2 = e2;
-                
-                window.safeCacheDB(db);
-                window.renderAllPages(); 
+                evalOk = true;
+                window.renderAllPages();
+            });
+
+            try {
+                const results = await Promise.allSettled([lightTask, evalTask]);
+                const failed = results.filter(r => r.status === 'rejected');
+                if (failed.length) failed.forEach(f => console.error("Sync Failed:", f.reason));
+
+                if (lightOk && evalOk) window.safeCacheDB(db);
 
                 if(document.getElementById('page-8') && document.getElementById('page-8').classList.contains('active')) {
                     window.changeAdminSection();
                     window.loadItemsForEdit();
                 }
-                
-                if(showAlert) window.showToast("ซิงค์ข้อมูล Real-time สำเร็จ!");
 
-            } catch(err) {
-                console.error("Sync Failed:", err);
-                if(showAlert) window.showToast("เกิดข้อผิดพลาดในการดึงข้อมูล", "error");
+                if(showAlert) {
+                    if (failed.length) window.showToast("เกิดข้อผิดพลาดในการดึงข้อมูลบางส่วน", "error");
+                    else window.showToast("ซิงค์ข้อมูล Real-time สำเร็จ!");
+                }
             } finally {
                 if(btnIcon) btnIcon.classList.remove('fa-spin');
             }
         };
+
 
         window.renderAllPages = function() {
             ['home-name','prof-name'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).innerText = db.settings.Name || 'นายจิตรภาณุ ศรีหวัง (เก่ง)';});
