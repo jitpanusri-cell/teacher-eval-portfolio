@@ -8,6 +8,9 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="https://drive.google.com/uc?export=view&id=1zC_TJwmzziZAPRap48Nr4gxK9_Cjs4-e">
 
+    <link rel="preconnect" href="https://rqtiuaiimyzuayctgrwk.supabase.co">
+    <link rel="dns-prefetch" href="https://rqtiuaiimyzuayctgrwk.supabase.co">
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts: Kanit, Sarabun, Prompt, Inter -->
@@ -20,7 +23,7 @@
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     
     <!-- TinyMCE Rich Text Editor CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.2/tinymce.min.js" referrerpolicy="origin"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.2/tinymce.min.js" referrerpolicy="origin"></script>
 
     <!-- Supabase JS Client สำหรับเชื่อมต่อฐานข้อมูลโดยตรงบน Frontend -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1031,6 +1034,20 @@
         const supabaseUrl = 'https://rqtiuaiimyzuayctgrwk.supabase.co';
         const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJxdGl1YWlpbXl6dWF5Y3RncndrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk3ODA1NjUsImV4cCI6MjEwNTM1NjU2NX0.26zCCI0Og1Gv4qK18I_Jq8VGHE2hRhXiuWnGEe5h4uA';
         const supabaseClient = createClient(supabaseUrl, supabaseKey);
+        // ยิง query ไปที่ Supabase ทันที ณ บรรทัดนี้เลย (เร็วที่สุดเท่าที่ทำได้ในหน้าเว็บนี้)
+        // ไม่ต้องรอ DOMContentLoaded หรือรอให้ไลบรารีอื่นๆ (Tailwind/ฟอนต์/FontAwesome ฯลฯ)
+        // โหลดเสร็จ่อน เพราะ fetch/network request ไม่จำเป็นต้องรอ DOM พร้อม
+        // เก็บ promise ไว้ใช้ต่อใน syncData() ด้านล่าง แทนที่จะต้องยิง query ซ้ำ
+        window.__earlyLightFetch = Promise.all([
+            supabaseClient.from('settings').select('*'),
+            supabaseClient.from('workload').select('*').order('id', { ascending: true }),
+            supabaseClient.from('portfolio').select('*').order('id', { ascending: true })
+        ]);
+        window.__earlyEvalFetch = Promise.all([
+            supabaseClient.from('eval_items').select(`*, eval_criteria(name), eval_sections(name)`).in('section_id', [1, 2]).order('section_id').order('criteria_id').order('sort_order'),
+            supabaseClient.from('eval_items').select(`*, eval_criteria(name), eval_sections(name)`).eq('section_id', 3).order('criteria_id').order('sort_order')
+        ]);
+
 
         let db = { evals_1: [], evals_2: [], workload: [], portfolio: [], settings: {} };
         let currentSlide = { 1: 0, 2: 0 }; 
@@ -1890,11 +1907,12 @@ window.loginAdmin = async function() {
             // เยอะกว่ามาก) ยังโหลดต่อในพื้นหลัง ไม่บล็อกการแสดงผลส่วนอื่น
             let lightOk = false, evalOk = false;
 
-            const lightTask = Promise.all([
+            const lightTask = (window.__earlyLightFetch || Promise.all([
                 supabaseClient.from('settings').select('*'),
                 supabaseClient.from('workload').select('*').order('id', { ascending: true }),
                 supabaseClient.from('portfolio').select('*').order('id', { ascending: true })
-            ]).then(([{ data: setRaw, error: err1 }, { data: wlRaw, error: err2 }, { data: pfRaw, error: err3 }]) => {
+            ])).then(([{ data: setRaw, error: err1 }, { data: wlRaw, error: err2 }, { data: pfRaw, error: err3 }]) => {
+                window.__earlyLightFetch = null;
                 if (err1) console.error("Error Settings:", err1);
                 if (err2) console.error("Error Workload:", err2);
                 if (err3) console.error("Error Portfolio:", err3);
@@ -1926,10 +1944,11 @@ window.loginAdmin = async function() {
                 window.renderAllPages();
             });
 
-            const evalTask = Promise.all([
+            const evalTask = (window.__earlyEvalFetch || Promise.all([
                 supabaseClient.from('eval_items').select(`*, eval_criteria(name), eval_sections(name)`).in('section_id', [1, 2]).order('section_id').order('criteria_id').order('sort_order'),
                 supabaseClient.from('eval_items').select(`*, eval_criteria(name), eval_sections(name)`).eq('section_id', 3).order('criteria_id').order('sort_order')
-            ]).then(([{ data: e1Raw, error: err4_1 }, { data: e2Raw, error: err4_2 }]) => {
+            ])).then(([{ data: e1Raw, error: err4_1 }, { data: e2Raw, error: err4_2 }]) => {
+                window.__earlyEvalFetch = null;
                 if (err4_1) console.error("Error Evals (1):", err4_1);
                 if (err4_2) console.error("Error Evals (2):", err4_2);
                 if (err4_1 || err4_2) throw new Error("Database Fetch Error (evals)");
