@@ -1038,15 +1038,48 @@
         // เก็บ cache ลง localStorage แบบปลอดภัย: ถ้าข้อมูลใหญ่เกินโควต้าของเบราว์เซอร์ (เช่น
         // คำอธิบายรายการประเมินที่มีรูปภาพฝังอยู่เยอะ) จะแค่ข้ามการ cache ไป ไม่ทำให้โค้ดส่วนอื่น
         // (โดยเฉพาะ renderAllPages ที่ใช้แสดงผลข้อมูลจริงบนหน้าเว็บ) หยุดทำงานตามไปด้วย
-        window.safeCacheDB = function(dbToCache) {
-            try {
-                localStorage.setItem('krutest_fast_db', JSON.stringify(dbToCache));
-            } catch (e) {
-                console.warn('ข้ามการ cache ข้อมูล (ข้อมูลใหญ่เกินโควต้า localStorage):', e);
+        window.idbCache = {
+            _dbPromise: null,
+            _open() {
+                if (this._dbPromise) return this._dbPromise;
+                this._dbPromise = new Promise((resolve, reject) => {
+                    const req = indexedDB.open('krutest_cache_db', 1);
+                    req.onupgradeneeded = () => { req.result.createObjectStore('kv'); };
+                    req.onsuccess = () => resolve(req.result);
+                    req.onerror = () => reject(req.error);
+                });
+                return this._dbPromise;
+            },
+            async set(key, value) {
+                try {
+                    const idb = await this._open();
+                    return await new Promise((resolve) => {
+                        const tx = idb.transaction('kv', 'readwrite');
+                        tx.objectStore('kv').put(value, key);
+                        tx.oncomplete = () => resolve(true);
+                        tx.onerror = () => resolve(false);
+                    });
+                } catch (e) { return false; }
+            },
+            async get(key) {
+                try {
+                    const idb = await this._open();
+                    return await new Promise((resolve) => {
+                        const tx = idb.transaction('kv', 'readonly');
+                        const req = tx.objectStore('kv').get(key);
+                        req.onsuccess = () => resolve(req.result);
+                        req.onerror = () => resolve(undefined);
+                    });
+                } catch (e) { return undefined; }
             }
         };
 
-        document.addEventListener("DOMContentLoaded", () => {
+        window.safeCacheDB = async function(dbToCache) {
+            const ok = await window.idbCache.set('krutest_fast_db', dbToCache);
+            if (!ok) console.warn('failed to cache data (IndexedDB write failed)');
+        };
+
+        document.addEventListener("DOMContentLoaded", async () => {
             try { if (typeof AOS !== 'undefined') AOS.init({ once: true, offset: 50 }); } catch(e){}
             
             let savedPage = sessionStorage.getItem('krutest_page');
@@ -1058,23 +1091,22 @@
             let savedS2 = sessionStorage.getItem('krutest_s2');
             if(savedS2 !== null) currentSlide[2] = parseInt(savedS2);
 
-            let cachedDb = localStorage.getItem('krutest_fast_db');
-            if(cachedDb) {
-                try {
-                    db = JSON.parse(cachedDb);
+            try {
+                let cachedDb = await window.idbCache.get('krutest_fast_db');
+                if (cachedDb) {
+                    db = cachedDb;
                     window.renderAllPages();
-                } catch(err) {}
-            }
+                }
+            } catch(err) {}
 
             loadPresentationFontSettings();
             goToPage(targetPage, true);
             
-            // โหลดข้อมูลออโต้เพียง 1 ครั้งตอนเปิดเว็บแรกสุดเท่านั้น ลดการสแปมเซิร์ฟเวอร์
             window.syncData(false);
         });
 
-        // จัดการล็อกอินผู้ดูแลระบบผ่าน Supabase Auth
-        window.loginAdmin = async function() {
+        
+window.loginAdmin = async function() {
             const { data } = await supabaseClient.auth.getSession();
             if (data && data.session) {
                 window.goToPage(8);
