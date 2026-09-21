@@ -2048,7 +2048,7 @@ window.loginAdmin = async function() {
                     let imgUrl = window.formatDriveLink(rawUrl);
                     let radius = radiusPatterns[index % radiusPatterns.length];
                     let startAngle = (360 / Math.max(totalOrbits, 1)) * index;
-                    let duration = 28 + (index * 4);
+                    let duration = 40; // ความเร็วหมุนเท่ากันทุกรูป ป้องกันรูปไล่ทันกันจนไปกองรวมกัน
                     
                     let itemDiv = document.createElement('div');
                     itemDiv.className = 'orbit-animated-item w-20 h-20 md:w-24 md:h-24 bg-white rounded-full p-1 shadow-xl border border-white z-20 overflow-hidden';
