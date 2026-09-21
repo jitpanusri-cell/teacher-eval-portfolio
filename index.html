@@ -334,6 +334,10 @@
         <div id="page-1" class="page-section active w-full h-screen fixed inset-0 z-40 overflow-hidden" style="display: block; opacity: 1;">
             <div class="w-full h-full relative flex flex-col md:flex-row items-center p-8 md:p-16 max-w-screen-2xl mx-auto">
                 <div class="w-full md:w-[50%] z-20 space-y-3 text-left pl-0 md:pl-12 animate-on-load">
+                    <div id="home-logos-row" class="flex items-center gap-3 mb-1">
+                        <img id="home-logo-school" src="" alt="โลโก้โรงเรียน" class="hidden w-12 h-12 md:w-14 md:h-14 object-contain rounded-full bg-white/70 backdrop-blur-md border border-brand-200 shadow-sm p-1">
+                        <img id="home-logo-obec" src="" alt="โลโก้ สพฐ." class="hidden w-12 h-12 md:w-14 md:h-14 object-contain rounded-full bg-white/70 backdrop-blur-md border border-brand-200 shadow-sm p-1">
+                    </div>
                     <div class="inline-flex items-center px-4 py-1.5 rounded-full bg-white/70 backdrop-blur-md border border-brand-200 shadow-sm">
                         <span class="w-2.5 h-2.5 rounded-full bg-brand-500 mr-2 animate-pulse"></span>
                         <span class="text-sm font-medium text-brand-700 tracking-wide">รายงานผลการปฏิบัติงาน</span>
@@ -844,6 +848,16 @@
                         <div>
                             <label class="text-sm font-medium text-slate-700">ลิงก์รูปโปรไฟล์หลัก (วงกลมกลาง)</label>
                             <input type="text" id="prof-f-img" class="w-full border rounded-lg p-2 mt-1" placeholder="วางลิงก์รูปภาพ หรือลิงก์ Google Drive">
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-sm font-medium text-slate-700">ลิงก์โลโก้โรงเรียน</label>
+                                <input type="text" id="prof-f-logo-school" class="w-full border rounded-lg p-2 mt-1" placeholder="วางลิงก์รูปภาพ หรือลิงก์ Google Drive">
+                            </div>
+                            <div>
+                                <label class="text-sm font-medium text-slate-700">ลิงก์โลโก้ สพฐ.</label>
+                                <input type="text" id="prof-f-logo-obec" class="w-full border rounded-lg p-2 mt-1" placeholder="วางลิงก์รูปภาพ หรือลิงก์ Google Drive">
+                            </div>
                         </div>
                         
                         <div class="border-t pt-5 mt-5">
@@ -2033,6 +2047,25 @@ window.loginAdmin = async function() {
                 if(document.getElementById('profile-page-img')) document.getElementById('profile-page-img').src = cleanProfileImg; 
             }
 
+            const logoSchoolEl = document.getElementById('home-logo-school');
+            if (logoSchoolEl) {
+                if (db.settings.LogoSchool && db.settings.LogoSchool.trim() !== "") {
+                    logoSchoolEl.src = window.formatDriveLink(db.settings.LogoSchool);
+                    logoSchoolEl.classList.remove('hidden');
+                } else {
+                    logoSchoolEl.classList.add('hidden');
+                }
+            }
+            const logoObecEl = document.getElementById('home-logo-obec');
+            if (logoObecEl) {
+                if (db.settings.LogoObec && db.settings.LogoObec.trim() !== "") {
+                    logoObecEl.src = window.formatDriveLink(db.settings.LogoObec);
+                    logoObecEl.classList.remove('hidden');
+                } else {
+                    logoObecEl.classList.add('hidden');
+                }
+            }
+
             const orbitContainer = document.getElementById('orbit-container');
             if(orbitContainer) {
                 orbitContainer.innerHTML = '';
@@ -2312,6 +2345,8 @@ window.loginAdmin = async function() {
                 document.getElementById('prof-f-school').value = db.settings.School || '';
                 document.getElementById('prof-f-address').value = db.settings.Address || '';
                 document.getElementById('prof-f-img').value = db.settings.ProfileImage || '';
+                document.getElementById('prof-f-logo-school').value = db.settings.LogoSchool || '';
+                document.getElementById('prof-f-logo-obec').value = db.settings.LogoObec || '';
 
                 setTimeout(() => { 
                     window.initTinyMCE('#prof-home-richtext'); 
@@ -2659,7 +2694,9 @@ window.loginAdmin = async function() {
                             { key: 'Position', value: document.getElementById('prof-f-pos').value, updated_at: new Date() },
                             { key: 'School', value: document.getElementById('prof-f-school').value, updated_at: new Date() },
                             { key: 'Address', value: document.getElementById('prof-f-address').value, updated_at: new Date() },
-                            { key: 'ProfileImage', value: document.getElementById('prof-f-img').value, updated_at: new Date() }
+                            { key: 'ProfileImage', value: document.getElementById('prof-f-img').value, updated_at: new Date() },
+                            { key: 'LogoSchool', value: document.getElementById('prof-f-logo-school').value, updated_at: new Date() },
+                            { key: 'LogoObec', value: document.getElementById('prof-f-logo-obec').value, updated_at: new Date() }
                         ];
                         
                         let richText = tinymce.get('prof-home-richtext') ? tinymce.get('prof-home-richtext').getContent() : document.getElementById('prof-home-richtext').innerHTML;
