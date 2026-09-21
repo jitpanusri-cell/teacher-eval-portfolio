@@ -1231,6 +1231,14 @@ window.loginAdmin = async function() {
             } else if(!isInitial) {
                 try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch(e) {}
             }
+
+            // ทุกครั้งที่ข้ามไปหน้าองค์ประกอบที่ 1 (หน้า 5) หรือองค์ประกอบที่ 2 (หน้า 6)
+            // ให้เริ่มที่หัวข้อย่อยแรก (index 0) เสมอ ไม่ค้างหัวข้อย่อยเดิมที่เคยดูไว้
+            if(pageNumber === 5 && typeof window.jumpToSlide === 'function') {
+                window.jumpToSlide(1, 0);
+            } else if(pageNumber === 6 && typeof window.jumpToSlide === 'function') {
+                window.jumpToSlide(2, 0);
+            }
             
             nav.classList.remove('expanded');
         };
